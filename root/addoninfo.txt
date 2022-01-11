@@ -1,0 +1,9 @@
+"AddonInfo"
+{
+  addonSteamAppID   	550
+  addontitle			"Left 4 Fun"
+  addonversion	    	"2.0"
+  addonauthor 	   		"smilzo"
+  addonDescription  	"Adds some anti-grief features, admin commands, a simple mod system for easy game customization and more"
+  addonContent_Script 	1
+}
