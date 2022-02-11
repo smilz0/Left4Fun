@@ -1494,14 +1494,10 @@ Msg("Including left4fun_functions...\n");
 			Left4Fun.Log(LOG_LEVEL_DEBUG, "Sanitize - Removing weapon spawns...");
 			foreach (entclass, v in weaponSpawnsToRemove)
 			{
-				local ent = null;
-				while (ent = Entities.FindByClassname(ent, entclass))
-				{
-					if (Left4Fun.IsThePassingFinaleL4D1Item(entclass, ent.GetOrigin()))
-						Left4Fun.Log(LOG_LEVEL_DEBUG, "ignoring The Passing finale L4D1 " + entclass);
-					else
-						DoEntFire("!self", "Kill", "", 0, null, ent);
-				}
+				if (Left4Fun.IsThePassingFinaleL4D1Item(entclass, ent.GetOrigin()))
+					Left4Fun.Log(LOG_LEVEL_DEBUG, "ignoring The Passing finale L4D1 " + entclass);
+				else
+					EntFire(entclass, "Kill");
 			}
 		}
 		
@@ -1538,9 +1534,7 @@ Msg("Including left4fun_functions...\n");
 			Left4Fun.Log(LOG_LEVEL_DEBUG, "Sanitize - Removing util spawns...");
 			foreach (entclass, v in utilSpawnsToRemove)
 			{
-				local ent = null;
-				while (ent = Entities.FindByClassname(ent, entclass))
-					DoEntFire("!self", "Kill", "", 0, null, ent);
+				EntFire(entclass, "Kill");
 			}
 		}
 		
@@ -1579,9 +1573,7 @@ Msg("Including left4fun_functions...\n");
 			Left4Fun.Log(LOG_LEVEL_DEBUG, "Sanitize - Removing med spawns...");
 			foreach (entclass, v in medSpawnsToRemove)
 			{
-				local ent = null;
-				while (ent = Entities.FindByClassname(ent, entclass))
-					DoEntFire("!self", "Kill", "", 0, null, ent);
+				EntFire(entclass, "Kill");
 			}
 		}
 
@@ -1595,9 +1587,7 @@ Msg("Including left4fun_functions...\n");
 			Left4Fun.Log(LOG_LEVEL_DEBUG, "Sanitize - Removing health cabinets...");
 			foreach (entclass, v in medSpawnsToRemove)
 			{
-				local ent = null;
-				while (ent = Entities.FindByClassname(ent, entclass))
-					DoEntFire("!self", "Kill", "", 0, null, ent);
+				EntFire(entclass, "Kill");
 			}
 		}
 		
@@ -1637,9 +1627,7 @@ Msg("Including left4fun_functions...\n");
 			Left4Fun.Log(LOG_LEVEL_DEBUG, "Sanitize - Removing upgrade spawns...");
 			foreach (entclass, v in upgradeSpawnsToRemove)
 			{
-				local ent = null;
-				while (ent = Entities.FindByClassname(ent, entclass))
-					DoEntFire("!self", "Kill", "", 0, null, ent);
+				EntFire(entclass, "Kill");
 			}
 		}
 		
@@ -1687,9 +1675,7 @@ Msg("Including left4fun_functions...\n");
 			Left4Fun.Log(LOG_LEVEL_DEBUG, "Sanitize - Removing extra spawns...");
 			foreach (entclass, v in extraSpawnsToRemove)
 			{
-				local ent = null;
-				while (ent = Entities.FindByClassname(ent, entclass))
-					DoEntFire("!self", "Kill", "", 0, null, ent);
+				EntFire(entclass, "Kill");
 			}
 		}
 		
@@ -1704,14 +1690,10 @@ Msg("Including left4fun_functions...\n");
 			Left4Fun.Log(LOG_LEVEL_DEBUG, "Sanitize - Removing ammo...");
 			foreach (entclass, v in ammoToRemove)
 			{
-				local ent = null;
-				while (ent = Entities.FindByClassname(ent, entclass))
-				{
-					if (Left4Fun.IsThePassingFinaleL4D1Item(entclass, ent.GetOrigin()))
-						Left4Fun.Log(LOG_LEVEL_DEBUG, "ignoring The Passing finale L4D1 " + entclass);
-					else
-						DoEntFire("!self", "Kill", "", 0, null, ent);
-				}
+				if (Left4Fun.IsThePassingFinaleL4D1Item(entclass, ent.GetOrigin()))
+					Left4Fun.Log(LOG_LEVEL_DEBUG, "ignoring The Passing finale L4D1 " + entclass);
+				else
+					EntFire(entclass, "Kill");
 			}
 		}
 	}

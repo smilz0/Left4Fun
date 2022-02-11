@@ -270,7 +270,7 @@ Msg("Including survivor_abilities...\n");
 					local range = null;
 					local damage = null;
 					
-					// It is possible to override the default values of cooldown, maxusage, duration, range and damage for each ability by adding comma separated values after the ability type (example: SurvivorAbility_Fire,60,10,40,100,0.1)
+					// It is possible to override the default values of cooldown, maxusage, duration, range and damage for each ability by adding comma separated values after the ability type (example: Fireman,60,10,40,100,0.1)
 					local args = split(line, ",");
 					if (args.len() > 1)
 					{

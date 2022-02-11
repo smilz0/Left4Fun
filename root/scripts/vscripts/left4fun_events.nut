@@ -11,6 +11,8 @@ Msg("Including left4fun_events...\n");
 	{
 		Left4Fun.ModeStarted = true;
 		Left4Fun.OnModeStart();
+		if ("OnModeStart" in DirectorScript.GetDirectorOptions())
+			DirectorScript.GetDirectorOptions().OnModeStart();
 	}
 }
 
@@ -1128,6 +1130,8 @@ long	type	damage type
 		else
 			Left4Fun.OnL4FPickupGrabbed(player, entity);
 	}
+	
+	Left4Fun.Log(LOG_LEVEL_DEBUG, player.GetPlayerName() + " USE " + entity.GetClassname());
 }
 
 ::Left4Fun.Events.OnGameEvent_entity_shoved <- function (params)
@@ -1456,9 +1460,11 @@ HooksHub.SetUserConsoleCommand("L4F", ::Left4Fun.UserConsoleCommand);
 		local dmg = Left4Fun.OnPlayerDamage(victim, attacker, damageDone, damageTable);
 		if (dmg != null)
 			damageTable.DamageDone = dmg;
+		
+		return (damageTable.DamageDone > 0);
 	}
 	
-	return (damageTable.DamageDone > 0);
+	return true;
 }
 
 HooksHub.SetAllowTakeDamage("L4F", ::Left4Fun.AllowTakeDamage);
