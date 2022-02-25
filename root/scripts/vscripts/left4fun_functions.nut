@@ -2852,8 +2852,13 @@ Msg("Including left4fun_functions...\n");
 
 	::Left4Fun.InitHud <- function ()
 	{
-		Left4Hud.AddHud("money", g_ModeScript.HUD_TICKER, g_ModeScript.HUD_FLAG_TEAM_SURVIVORS | g_ModeScript.HUD_FLAG_NOTVISIBLE);
-		Left4Hud.PlaceHud("money", 0.25, 0.0, 0.5, 0.025);
+		// TODO: keep already created huds from other scripts (but how? there is no HUDGetLayout)
+		
+		if (Left4Fun.L4FCvars.money_hud)
+		{
+			Left4Hud.AddHud("money", g_ModeScript.HUD_TICKER, g_ModeScript.HUD_FLAG_TEAM_SURVIVORS | g_ModeScript.HUD_FLAG_NOTVISIBLE);
+			Left4Hud.PlaceHud("money", 0.25, 0.0, 0.5, 0.025);
+		}
 	}
 
 	::Left4Fun.UpdHud <- function (args)
