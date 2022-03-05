@@ -1494,10 +1494,14 @@ Msg("Including left4fun_functions...\n");
 			Left4Fun.Log(LOG_LEVEL_DEBUG, "Sanitize - Removing weapon spawns...");
 			foreach (entclass, v in weaponSpawnsToRemove)
 			{
-				if (Left4Fun.IsThePassingFinaleL4D1Item(entclass, ent.GetOrigin()))
-					Left4Fun.Log(LOG_LEVEL_DEBUG, "ignoring The Passing finale L4D1 " + entclass);
-				else
-					EntFire(entclass, "Kill");
+				local ent = null;
+				while (ent = Entities.FindByClassname(ent, entclass))
+				{
+					if (Left4Fun.IsThePassingFinaleL4D1Item(entclass, ent.GetOrigin()))
+						Left4Fun.Log(LOG_LEVEL_DEBUG, "ignoring The Passing finale L4D1 " + entclass);
+					else
+						DoEntFire("!self", "Kill", "", 0, null, ent);
+				}
 			}
 		}
 		
@@ -1690,10 +1694,14 @@ Msg("Including left4fun_functions...\n");
 			Left4Fun.Log(LOG_LEVEL_DEBUG, "Sanitize - Removing ammo...");
 			foreach (entclass, v in ammoToRemove)
 			{
-				if (Left4Fun.IsThePassingFinaleL4D1Item(entclass, ent.GetOrigin()))
-					Left4Fun.Log(LOG_LEVEL_DEBUG, "ignoring The Passing finale L4D1 " + entclass);
-				else
-					EntFire(entclass, "Kill");
+				local ent = null;
+				while (ent = Entities.FindByClassname(ent, entclass))
+				{
+					if (Left4Fun.IsThePassingFinaleL4D1Item(entclass, ent.GetOrigin()))
+						Left4Fun.Log(LOG_LEVEL_DEBUG, "ignoring The Passing finale L4D1 " + entclass);
+					else
+						DoEntFire("!self", "Kill", "", 0, null, ent);
+				}
 			}
 		}
 	}
