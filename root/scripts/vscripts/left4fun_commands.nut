@@ -1644,8 +1644,14 @@ Msg("Including left4fun_commands...\n");
 					return;
 				}
 				
+				local resetC = Left4Fun.GetArg(2, args);
+				if (resetC && (resetC == "true" || resetC == "1"))
+					resetC = true;
+				else
+					resetC = false;
+				
 				foreach (target in targets)
-					SurvivorAbilities.SetPreferred(target, abilityName);
+					SurvivorAbilities.SetPreferred(target, abilityName, resetC);
 				
 				Left4Fun.PrintToPlayerChat(player, "Done", PRINTCOLOR_GREEN);
 				
@@ -1653,7 +1659,7 @@ Msg("Including left4fun_commands...\n");
 			}
 		}
 		
-		if (player.IsDead() || player.IsDying() || NetProps.GetPropInt(player, "m_iTeamNum") != TEAM_SURVIVORS)
+		if (!Left4Fun.L4FCvars.survivor_abilities_allow_cmds || !Left4Fun.L4FCvars.survivor_abilities_allow_set || player.IsDead() || player.IsDying() || NetProps.GetPropInt(player, "m_iTeamNum") != TEAM_SURVIVORS)
 			return;
 			
 		if (!Left4Fun.IsInSafeSpot(player))
@@ -1707,7 +1713,7 @@ Msg("Including left4fun_commands...\n");
 			}
 		}
 		
-		if (player.IsDead() || player.IsDying() || (Left4Fun.L4FCvars.survivor_abilities_removeonincap && (player.IsIncapacitated() || player.IsHangingFromLedge())) || NetProps.GetPropInt(player, "m_iTeamNum") != TEAM_SURVIVORS)
+		if (!Left4Fun.L4FCvars.survivor_abilities_allow_cmds || player.IsDead() || player.IsDying() || (Left4Fun.L4FCvars.survivor_abilities_removeonincap && (player.IsIncapacitated() || player.IsHangingFromLedge())) || NetProps.GetPropInt(player, "m_iTeamNum") != TEAM_SURVIVORS)
 			return;
 		
 		if (Left4Fun.IsInSafeSpot(player))
@@ -1797,6 +1803,9 @@ Msg("Including left4fun_commands...\n");
 				return;
 			}
 		}
+		
+		if (!Left4Fun.L4FCvars.survivor_abilities_allow_cmds)
+			return;
 		
 		Left4Fun.Log(LOG_LEVEL_DEBUG, "CMD_ability_stop from " + player.GetPlayerName());
 		

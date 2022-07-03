@@ -144,7 +144,7 @@ Msg("Including left4fun_events...\n");
 	
 	//Left4Fun.Log(LOG_LEVEL_DEBUG, "GetSurvivorSet: " + Director.GetSurvivorSet() + " - GetMapName: " + Director.GetMapName() + " - GetGameModeBase: " + Director.GetGameModeBase());
 	
-	Left4Fun.InitHud();
+	//Left4Fun.InitHud();
 	
 	// Load the list of melee weapons we are not allowed to use on this map
 	Left4Fun.UnavailableMelee = {};
@@ -424,14 +424,17 @@ Msg("Including left4fun_events...\n");
 	
 	Left4Fun.JoiningUserids.push(userid);
 	
-	Left4Fun.ChatNotice(name + " connected");
+	if (name)
+	{
+		Left4Fun.ChatNotice(name + " connected");
 
-	if (Left4Fun.IsAdminSteamID(steamID))
-		Left4Fun.AdminHint(ST_NOTICE.INFO, "Admin " + name + " connected");
-	else if (Left4Fun.IsTrollSteamID(steamID))
-		Left4Fun.AdminHint(ST_NOTICE.WARNING, "Troll " + name + " connected");
-	else
-		Left4Fun.AdminHint(ST_NOTICE.INFO, "Player " + name + " connected");
+		if (Left4Fun.IsAdminSteamID(steamID))
+			Left4Fun.AdminHint(ST_NOTICE.INFO, "Admin " + name + " connected");
+		else if (Left4Fun.IsTrollSteamID(steamID))
+			Left4Fun.AdminHint(ST_NOTICE.WARNING, "Troll " + name + " connected");
+		else
+			Left4Fun.AdminHint(ST_NOTICE.INFO, "Player " + name + " connected");
+	}
 }
 
 ::Left4Fun.Events.OnGameEvent_player_connect_full <- function (params)
@@ -939,6 +942,28 @@ float	victim_z
 	local ammo = NetProps.GetPropIntArray(player, "m_iAmmo", ammoType) - clip2;
 	
 	NetProps.SetPropIntArray(player, "m_iAmmo", ammo, ammoType);
+}
+
+::Left4Fun.Events.OnGameEvent_weapon_drop <- function (params)
+{
+	if (!Left4Fun.Settings.m60_fix)
+		return;
+	
+	local weapon = null;
+	if ("propid" in params)
+		weapon = EntIndexToHScript(params["propid"]);
+	
+	if (!weapon || !weapon.IsValid() || weapon.GetClassname() != "weapon_rifle_m60")
+		return;
+	
+	Left4Fun.Log(LOG_LEVEL_DEBUG, "OnGameEvent_weapon_drop - weapon_rifle_m60 dropped");
+	
+	if (NetProps.GetPropInt(weapon, "m_iClip1") > 0)
+		return;
+
+	NetProps.SetPropInt(weapon, "m_iClip1", 1); // m60 with empty clip cannot be picked up
+		
+	Left4Fun.Log(LOG_LEVEL_DEBUG, "OnGameEvent_weapon_drop - dropped weapon_rifle_m60 fixed");
 }
 
 ::Left4Fun.Events.OnGameEvent_finale_start <- function (params)

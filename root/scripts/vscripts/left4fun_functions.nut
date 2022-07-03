@@ -2862,14 +2862,22 @@ Msg("Including left4fun_functions...\n");
 	{
 		// TODO: keep already created huds from other scripts (but how? there is no HUDGetLayout)
 		
+		Left4Hud.RemoveHud("money");
+		Left4Hud.RemoveHud("abilities");
+		
 		if (Left4Fun.L4FCvars.money_hud)
 		{
 			Left4Hud.AddHud("money", g_ModeScript.HUD_TICKER, g_ModeScript.HUD_FLAG_TEAM_SURVIVORS | g_ModeScript.HUD_FLAG_NOTVISIBLE);
 			Left4Hud.PlaceHud("money", 0.25, 0.0, 0.5, 0.025);
 		}
+		else if (Left4Fun.L4FCvars.survivor_abilities_hud) // Can't place more than one hud on the same slot
+		{
+			Left4Hud.AddHud("abilities", g_ModeScript.HUD_TICKER, g_ModeScript.HUD_FLAG_TEAM_SURVIVORS | g_ModeScript.HUD_FLAG_NOTVISIBLE);
+			Left4Hud.PlaceHud("abilities", 0.25, 0.0, 0.5, 0.025);
+		}
 	}
 
-	::Left4Fun.UpdHud <- function (args)
+	::Left4Fun.UpdMoneyHud <- function (args)
 	{
 		local str = "";
 		
@@ -2888,22 +2896,55 @@ Msg("Including left4fun_functions...\n");
 		Left4Hud.SetHudText("money", str);
 	}
 
+	::Left4Fun.UpdAbilitiesHud <- function (args)
+	{
+		local str = "";
+		
+		foreach(s in ::Left4Utils.GetAllSurvivors())
+		{
+			local userid = s.GetPlayerUserId();
+			if (userid in ::SurvivorAbilities.Cooldowns)
+			{
+				if (str == "")
+					str = s.GetPlayerName() + ": " + ::SurvivorAbilities.Cooldowns[userid].tointeger();
+				else
+					str += " - " + s.GetPlayerName() + ": " + ::SurvivorAbilities.Cooldowns[userid].tointeger();
+			}
+		}
+		
+		Left4Hud.SetHudText("abilities", str);
+	}
+
 	::Left4Fun.ShowHud <- function ()
 	{
-		Left4Timers.RemoveTimer("UpdHud");
+		Left4Timers.RemoveTimer("UpdMoneyHud");
+		Left4Timers.RemoveTimer("UpdAbilitiesHud");
 		
-		Left4Fun.UpdHud(null);
+		Left4Fun.InitHud(); // TODO: Need to find a better way to do this
 		
-		Left4Hud.ShowHud("money");
+		Left4Fun.UpdMoneyHud(null);
+		Left4Fun.UpdAbilitiesHud(null);
 		
-		Left4Timers.AddTimer("UpdHud", 2, Left4Fun.UpdHud, { }, true);
+		if (Left4Fun.L4FCvars.money_hud)
+		{
+			Left4Hud.ShowHud("money");
+			Left4Timers.AddTimer("UpdMoneyHud", 2, Left4Fun.UpdMoneyHud, { }, true);
+		}
+			
+		if (Left4Fun.L4FCvars.survivor_abilities_hud)
+		{
+			Left4Hud.ShowHud("abilities");
+			Left4Timers.AddTimer("UpdAbilitiesHud", 1, Left4Fun.UpdAbilitiesHud, { }, true);
+		}
 	}
 
 	::Left4Fun.HideHud <- function (args)
 	{
-		Left4Timers.RemoveTimer("UpdHud");
+		Left4Timers.RemoveTimer("UpdMoneyHud");
+		Left4Timers.RemoveTimer("UpdAbilitiesHud");
 		
 		Left4Hud.HideHud("money");
+		Left4Hud.HideHud("abilities");
 	}
 
 	::Left4Fun.GetPrimaryLevel <- function (inventory)

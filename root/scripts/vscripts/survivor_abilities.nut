@@ -442,7 +442,7 @@ Msg("Including survivor_abilities...\n");
 		return true;
 	}
 
-	::SurvivorAbilities.SetPreferred <- function(survivor, abilityName)
+	::SurvivorAbilities.SetPreferred <- function(survivor, abilityName, resetCooldown = true)
 	{
 		if (!survivor || !survivor.IsValid())
 			return false;
@@ -455,6 +455,9 @@ Msg("Including survivor_abilities...\n");
 		::SurvivorAbilities.PreferredAbilities[survivor.GetPlayerUserId()] <- abilityName;
 		
 		Left4Fun.Log(LOG_LEVEL_DEBUG, "PreferredAbilities.len() = " + SurvivorAbilities.PreferredAbilities.len());
+		
+		if (resetCooldown)
+			SurvivorAbilities.ResetCooldown(survivor);
 		
 		return true;
 	}

@@ -56,7 +56,9 @@ if (!("L4FCvarsBak" in getroottable()))
 		survivor_abilities_hud = 0
 		survivor_abilities_removeonincap = 1
 		survivor_abilities_add_onspawn = 0
-		survivor_abilities_notifications = 1
+		survivor_abilities_notifications = 0
+		survivor_abilities_allow_cmds = 1
+		survivor_abilities_allow_set = 1
 	}
 
 	::Left4Fun.PersistentCVars <- {}
@@ -351,7 +353,7 @@ if (!("L4FCvarsBak" in getroottable()))
 				Left4Fun.L4FCvars.money_hud = String2Bool(value);
 				
 				Left4Fun.HideHud(null);
-				if (Left4Fun.L4FCvars.money_hud)
+				if (Left4Fun.L4FCvars.money_hud || Left4Fun.L4FCvars.survivor_abilities_hud)
 					Left4Fun.ShowHud();
 				
 				return true;
@@ -413,7 +415,13 @@ if (!("L4FCvarsBak" in getroottable()))
 				return true;
 				
 			case "l4f_survivor_abilities_hud":
+			
 				Left4Fun.L4FCvars.survivor_abilities_hud = String2Bool(value);
+				
+				Left4Fun.HideHud(null);
+				if (Left4Fun.L4FCvars.money_hud || Left4Fun.L4FCvars.survivor_abilities_hud)
+					Left4Fun.ShowHud();
+				
 				return true;
 				
 			case "l4f_survivor_abilities_removeonincap":
@@ -426,6 +434,14 @@ if (!("L4FCvarsBak" in getroottable()))
 				
 			case "l4f_survivor_abilities_notifications":
 				Left4Fun.L4FCvars.survivor_abilities_notifications = String2Bool(value);
+				return true;
+				
+			case "l4f_survivor_abilities_allow_cmds":
+				Left4Fun.L4FCvars.survivor_abilities_allow_cmds = String2Bool(value);
+				return true;
+				
+			case "l4f_survivor_abilities_allow_set":
+				Left4Fun.L4FCvars.survivor_abilities_allow_set = String2Bool(value);
 				return true;
 		}
 		
@@ -611,6 +627,12 @@ if (!("L4FCvarsBak" in getroottable()))
 				
 			case "l4f_survivor_abilities_notifications":
 				return Bool2String(Left4Fun.L4FCvars.survivor_abilities_notifications);
+				
+			case "l4f_survivor_abilities_allow_cmds":
+				return Bool2String(Left4Fun.L4FCvars.survivor_abilities_allow_cmds);
+				
+			case "l4f_survivor_abilities_allow_set":
+				return Bool2String(Left4Fun.L4FCvars.survivor_abilities_allow_set);
 		}
 		
 		local idx = cvar.find("l4f_director.");
