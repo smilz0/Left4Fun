@@ -250,69 +250,64 @@ Msg("Including survivor_abilities...\n");
 	{
 		::SurvivorAbilities.AbilityTypes <- {};
 		
-		local fileName = "left4fun/survivorabilities/types.txt";
-		local fileContents = FileToString(fileName);
-		if (!fileContents)
-			Left4Fun.Log(LOG_LEVEL_ERROR, "SurvivorAbilities.LoadTypes - Unable to read file: \"" + fileName + "\"");
-		else
+		local lines = Left4Utils.FileToStringList("left4fun/survivorabilities/types.txt");
+		if (!lines)
+			return 0;
+
+		foreach (line in lines)
 		{
-			local lines = split(fileContents, "\r\n");
-			
-			foreach (line in lines)
+			line = strip(line);
+			if (line && line != "")
 			{
-				line = strip(line);
-				if (line && line != "")
+				local abilityType = line;
+				local cooldown = null;
+				local maxusage = null;
+				local duration = null;
+				local range = null;
+				local damage = null;
+				
+				// It is possible to override the default values of cooldown, maxusage, duration, range and damage for each ability by adding comma separated values after the ability type (example: Fireman,60,10,40,100,0.1)
+				local args = split(line, ",");
+				if (args.len() > 1)
 				{
-					local abilityType = line;
-					local cooldown = null;
-					local maxusage = null;
-					local duration = null;
-					local range = null;
-					local damage = null;
+					abilityType = strip(args[0]);
+					cooldown = strip(args[1]);
+				}
+				if (args.len() > 2)
+					maxusage = strip(args[2]);
+				if (args.len() > 3)
+					duration = strip(args[3]);
+				if (args.len() > 4)
+					range = strip(args[4]);
+				if (args.len() > 5)
+					damage = strip(args[5]);
+				
+				if (abilityType && abilityType != "")
+				{
+					if (!cooldown || cooldown == "")
+						cooldown = "SurvivorAbilities." + abilityType + ".ability_cooldown"; // Ability's default value
+					if (!maxusage || maxusage == "")
+						maxusage = "SurvivorAbilities." + abilityType + ".ability_maxusage"; // Ability's default value
+					if (!duration || duration == "")
+						duration = "SurvivorAbilities." + abilityType + ".ability_duration"; // Ability's default value
+					if (!range || range == "")
+						range = "SurvivorAbilities." + abilityType + ".ability_range"; // Ability's default value
+					if (!damage || damage == "")
+						damage = "SurvivorAbilities." + abilityType + ".ability_damage"; // Ability's default value
 					
-					// It is possible to override the default values of cooldown, maxusage, duration, range and damage for each ability by adding comma separated values after the ability type (example: Fireman,60,10,40,100,0.1)
-					local args = split(line, ",");
-					if (args.len() > 1)
+					try
 					{
-						abilityType = strip(args[0]);
-						cooldown = strip(args[1]);
-					}
-					if (args.len() > 2)
-						maxusage = strip(args[2]);
-					if (args.len() > 3)
-						duration = strip(args[3]);
-					if (args.len() > 4)
-						range = strip(args[4]);
-					if (args.len() > 5)
-						damage = strip(args[5]);
-					
-					if (abilityType && abilityType != "")
-					{
-						if (!cooldown || cooldown == "")
-							cooldown = "SurvivorAbilities." + abilityType + ".ability_cooldown"; // Ability's default value
-						if (!maxusage || maxusage == "")
-							maxusage = "SurvivorAbilities." + abilityType + ".ability_maxusage"; // Ability's default value
-						if (!duration || duration == "")
-							duration = "SurvivorAbilities." + abilityType + ".ability_duration"; // Ability's default value
-						if (!range || range == "")
-							range = "SurvivorAbilities." + abilityType + ".ability_range"; // Ability's default value
-						if (!damage || damage == "")
-							damage = "SurvivorAbilities." + abilityType + ".ability_damage"; // Ability's default value
+						local str = "IncludeScript(\"survivor_abilities/" + abilityType + ".nut\"); \r\n ::SurvivorAbilities.AbilityTypes[SurvivorAbilities." + abilityType + ".ability_name] <- { cooldown = " + cooldown + ", maxusage = " + maxusage + ", duration = " + duration + ", range = " + range + ", damage = " + damage + ", classobj = SurvivorAbilities." + abilityType + " }; \r\n foreach (sound in ::SurvivorAbilities." + abilityType + ".ability_sounds) { if (!(sound in ::Left4Fun.SoundsToPrecache)) Left4Fun.SoundsToPrecache.push(sound); }";
+						//Left4Fun.Log(LOG_LEVEL_DEBUG, str);
 						
-						try
-						{
-							local str = "IncludeScript(\"survivor_abilities/" + abilityType + ".nut\"); \r\n ::SurvivorAbilities.AbilityTypes[SurvivorAbilities." + abilityType + ".ability_name] <- { cooldown = " + cooldown + ", maxusage = " + maxusage + ", duration = " + duration + ", range = " + range + ", damage = " + damage + ", classobj = SurvivorAbilities." + abilityType + " }; \r\n foreach (sound in ::SurvivorAbilities." + abilityType + ".ability_sounds) { if (!(sound in ::Left4Fun.SoundsToPrecache)) Left4Fun.SoundsToPrecache.push(sound); }";
-							//Left4Fun.Log(LOG_LEVEL_DEBUG, str);
-							
-							local compiledscript = compilestring(str);
-							compiledscript();
-						}
-						catch(exception)
-						{
-							Left4Fun.Log(LOG_LEVEL_ERROR, "SurvivorAbilities.LoadTypes - Failed to add ability type (" + line + ") - " + exception);
-							if (Left4Fun.Settings.loglevel >= LOG_LEVEL_ERROR)
-								Left4Utils.PrintStackTrace();
-						}
+						local compiledscript = compilestring(str);
+						compiledscript();
+					}
+					catch(exception)
+					{
+						Left4Fun.Log(LOG_LEVEL_ERROR, "SurvivorAbilities.LoadTypes - Failed to add ability type (" + line + ") - " + exception);
+						if (Left4Fun.Settings.loglevel >= LOG_LEVEL_ERROR)
+							Left4Utils.PrintStackTrace();
 					}
 				}
 			}
@@ -327,22 +322,17 @@ Msg("Including survivor_abilities...\n");
 	{
 		::SurvivorAbilities.CharacterDefaults <- {};
 		
-		local fileName = "left4fun/survivorabilities/char_defaults.txt";
-		local fileContents = FileToString(fileName);
-		if (!fileContents)
-			Left4Fun.Log(LOG_LEVEL_ERROR, "SurvivorAbilities.LoadCharacterDefaults - Unable to read file: \"" + fileName + "\"");
-		else
+		local lines = Left4Utils.FileToStringList("left4fun/survivorabilities/char_defaults.txt");
+		if (!lines)
+			return 0;
+
+		local i = 0;
+		foreach (line in lines)
 		{
-			local lines = split(fileContents, "\r\n");
-			
-			local i = 0;
-			foreach (line in lines)
-			{
-				line = strip(line);
-				if (line != "" && (line in ::SurvivorAbilities.AbilityTypes))
-					::SurvivorAbilities.CharacterDefaults[i] <- line;
-				i++;
-			}
+			line = strip(line);
+			if (line != "" && (line in ::SurvivorAbilities.AbilityTypes))
+				::SurvivorAbilities.CharacterDefaults[i] <- line;
+			i++;
 		}
 		
 		//foreach (key, val in ::SurvivorAbilities.CharacterDefaults)

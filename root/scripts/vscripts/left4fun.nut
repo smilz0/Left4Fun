@@ -369,7 +369,7 @@ const LOG_LEVEL_DEBUG = 4;
 		if (!Left4Fun.LoadReplaceWithMoney())
 			Left4Fun.SaveReplaceWithMoney();
 		
-		if (Left4Fun.L4FCvars.gungame)
+		if (Left4Fun.L4FCvars.gungame) // TODO
 		{
 			Left4Fun.Log(LOG_LEVEL_INFO, "Loading GunGame config...");
 			c = Left4Fun.LoadGunGameConfig(mapname);

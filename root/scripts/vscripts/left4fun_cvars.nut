@@ -66,14 +66,11 @@ if (!("L4FCvarsBak" in getroottable()))
 	::Left4Fun.LoadCvars <- function (file, persistent = false)
 	{
 		local count = 0;
-		local fileContents = FileToString(file);
-		if (fileContents == null)
-		{
-			Left4Fun.Log(LOG_LEVEL_WARN, "Cvars file does not exist: " + file);
+		
+		local cvars = Left4Utils.FileToStringList(file);
+		if (!cvars)
 			return count;
-		}
 
-		local cvars = split(fileContents, "\r\n");
 		foreach (cvar in cvars)
 		{
 			//Left4Fun.Log(LOG_LEVEL_DEBUG, cvar);
@@ -248,11 +245,11 @@ if (!("L4FCvarsBak" in getroottable()))
 
 	::Left4Fun.SavePersistentCVars <- function ()
 	{
-		local fileContents = "";
+		local cvarList = [];
 		foreach (cvar, value in Left4Fun.PersistentCVars)
-			fileContents += cvar + " " + value + "\n";
+			cvarList.append(cvar + " " + value);
 		
-		StringToFile("left4fun/cfg/" + Left4Fun.BaseName + "_persistentcvars.txt", fileContents);
+		Left4Utils.StringListToFile("left4fun/cfg/" + Left4Fun.BaseName + "_persistentcvars.txt", cvarList, true);
 		
 		Left4Fun.Log(LOG_LEVEL_INFO, "Persistent cvars saved");
 	}

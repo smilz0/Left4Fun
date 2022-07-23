@@ -304,11 +304,11 @@ Msg("Including left4fun_functions...\n");
 	::Left4Fun.LoadStore <- function ()
 	{
 		local c = 0;
-		local fileContents = FileToString("left4fun/cfg/" + Left4Fun.BaseName + "_store.txt");
-		if (!fileContents)
+
+		local items = Left4Utils.FileToStringList("left4fun/cfg/" + Left4Fun.BaseName + "_store.txt");
+		if (!items)
 			return c;
-		
-		local items = split(fileContents, "\r\n");
+
 		foreach (item in items)
 		{
 			item = Left4Utils.StripComments(item);
@@ -352,35 +352,26 @@ Msg("Including left4fun_functions...\n");
 
 	::Left4Fun.SaveStore <- function ()
 	{
-		local fileContents = "";
+		local items = [];
 		foreach(key, value in Left4Fun.BuyItems_Spawn)
-		{
-			if (fileContents == "")
-				fileContents = key + " = " + value;
-			else
-				fileContents += "\n" + key + " = " + value;
-		}
+			items.append(key + " = " + value);
+
 		foreach(key, value in Left4Fun.BuyItems_Give)
-		{
-			if (fileContents == "")
-				fileContents = key + " = " + value.price;
-			else
-				fileContents += "\n" + key + " = " + value.price;
-		}
-		StringToFile("left4fun/cfg/" + Left4Fun.BaseName + "_store.txt", fileContents);
+			items.append(key + " = " + value.price);
 		
+		Left4Utils.StringListToFile("left4fun/cfg/" + Left4Fun.BaseName + "_store.txt", items, true);
+
 		Left4Fun.Log(LOG_LEVEL_INFO, "Store saved");
 	}
 
 	::Left4Fun.LoadReplaceWithMoney <- function ()
 	{
-		local fileContents = FileToString("left4fun/money/pickupstoreplace.txt");
-		if (!fileContents)
+		local replacements = Left4Utils.FileToStringList("left4fun/money/pickupstoreplace.txt");
+		if (!replacements)
 			return false;
-		
+
 		Left4Fun.ClassesToReplaceWithMoney <- {};
 		
-		local replacements = split(fileContents, "\r\n");
 		foreach (replacement in replacements)
 		{
 			replacement = Left4Utils.StripComments(replacement);
@@ -408,15 +399,11 @@ Msg("Including left4fun_functions...\n");
 
 	::Left4Fun.SaveReplaceWithMoney <- function ()
 	{
-		local fileContents = "";
+		local items = [];
 		foreach(key, value in Left4Fun.ClassesToReplaceWithMoney)
-		{
-			if (fileContents == "")
-				fileContents = key + " = " + value;
-			else
-				fileContents += "\n" + key + " = " + value;
-		}
-		StringToFile("left4fun/money/pickupstoreplace.txt", fileContents);
+			items.append(key + " = " + value);
+
+		Left4Utils.StringListToFile("left4fun/money/pickupstoreplace.txt", items, true);
 		
 		Left4Fun.Log(LOG_LEVEL_INFO, "ReplaceWithMoney saved");
 	}
@@ -1197,7 +1184,7 @@ Msg("Including left4fun_functions...\n");
 		Left4Fun.ZombieDropsConfig = { };
 		
 		local c = 0;
-		local fileContents = FileToString("left4fun/zombiedrops/" + mapname + ".txt");
+		local fileContents = FileToString("left4fun/zombiedrops/" + mapname + ".txt"); // TODO: default via conf file
 		if (!fileContents)
 		{
 			Left4Fun.Log(LOG_LEVEL_INFO, "ZombieDrops config not found, creating new one");
@@ -1232,7 +1219,10 @@ Msg("Including left4fun_functions...\n");
 			//Left4Fun.SaveZombieDropsConfig(mapname);
 		}
 		
-		local items = split(fileContents, "\r\n");
+		local items = Left4Utils.FileToStringList("left4fun/zombiedrops/" + mapname + ".txt");
+		if (!items)
+			return c;
+
 		foreach (item in items)
 		{
 			item = Left4Utils.StripComments(item);
@@ -1273,6 +1263,7 @@ Msg("Including left4fun_functions...\n");
 		return c;
 	}
 
+	/* TODO ?
 	::Left4Fun.BuildZombieDropsConfig <- function (fileContents, key)
 	{
 		foreach(conf in Left4Fun.ZombieDropsConfig[key])
@@ -1300,6 +1291,7 @@ Msg("Including left4fun_functions...\n");
 		
 		Left4Fun.Log(LOG_LEVEL_INFO, "ZombieDrops config saved");
 	}
+	*/
 
 	::Left4Fun.ConvertZombieDropsConfigs <- function (mapname)
 	{
