@@ -307,7 +307,10 @@ Msg("Including left4fun_functions...\n");
 
 		local items = Left4Utils.FileToStringList("left4fun/cfg/" + Left4Fun.BaseName + "_store.txt");
 		if (!items)
+		{
+			Left4Fun.SaveStore();
 			return c;
+		}
 
 		foreach (item in items)
 		{
@@ -366,9 +369,14 @@ Msg("Including left4fun_functions...\n");
 
 	::Left4Fun.LoadReplaceWithMoney <- function ()
 	{
+		local c = 0;
+		
 		local replacements = Left4Utils.FileToStringList("left4fun/money/pickupstoreplace.txt");
 		if (!replacements)
-			return false;
+		{
+			Left4Fun.SaveReplaceWithMoney();
+			return 0;
+		}
 
 		Left4Fun.ClassesToReplaceWithMoney <- {};
 		
@@ -389,12 +397,14 @@ Msg("Including left4fun_functions...\n");
 					//Left4Fun.Log(LOG_LEVEL_DEBUG, "ClassesToReplaceWithMoney[" + key + "] = " + value);
 					
 					Left4Fun.ClassesToReplaceWithMoney[key] <- value;
+					
+					c++;
 				}
 			}
 		}
 		Left4Fun.Log(LOG_LEVEL_INFO, "ReplaceWithMoney loaded");
 		
-		return true;
+		return c;
 	}
 
 	::Left4Fun.SaveReplaceWithMoney <- function ()
@@ -1179,15 +1189,12 @@ Msg("Including left4fun_functions...\n");
 		Left4Fun.Log(LOG_LEVEL_INFO, "GunGame config saved");
 	}
 
-	::Left4Fun.LoadZombieDropsConfig <- function (mapname)
+	::Left4Fun.CheckZombieDropsDefault <- function ()
 	{
-		Left4Fun.ZombieDropsConfig = { };
-		
-		local c = 0;
-		local fileContents = FileToString("left4fun/zombiedrops/" + mapname + ".txt"); // TODO: default via conf file
+		local fileContents = FileToString("left4fun/cfg/" + Left4Fun.BaseName + "_zombiedrops_def.txt");
 		if (!fileContents)
 		{
-			Left4Fun.Log(LOG_LEVEL_INFO, "ZombieDrops config not found, creating new one");
+			Left4Fun.Log(LOG_LEVEL_INFO, "ZombieDrops default file not found, creating it");
 		
 			fileContents = "// common\n"
 						 + "common,3,0,melee,pistol_magnum\n"
@@ -1212,10 +1219,29 @@ Msg("Including left4fun_functions...\n");
 						 + "tank,90,0,first_aid_kit,defibrillator\n"
 						 + "tank,80,0,first_aid_kit\n";
 			
+			StringToFile("left4fun/cfg/" + Left4Fun.BaseName + "_zombiedrops_def.txt", fileContents);
+		
+			Left4Fun.Log(LOG_LEVEL_INFO, "ZombieDrops default file created");
+		}
+		else
+			Left4Fun.Log(LOG_LEVEL_INFO, "ZombieDrops default file exists");
+	}
+
+	::Left4Fun.LoadZombieDropsConfig <- function (mapname)
+	{
+		Left4Fun.ZombieDropsConfig = { };
+		
+		local c = 0;
+		local fileContents = FileToString("left4fun/zombiedrops/" + mapname + ".txt");
+		if (!fileContents)
+		{
+			Left4Fun.Log(LOG_LEVEL_INFO, "ZombieDrops config not found, creating new one");
+
+			local fileContents = FileToString("left4fun/cfg/" + Left4Fun.BaseName + "_zombiedrops_def.txt");
 			StringToFile("left4fun/zombiedrops/" + mapname + ".txt", fileContents);
 		
 			Left4Fun.Log(LOG_LEVEL_INFO, "ZombieDrops config saved");
-			
+
 			//Left4Fun.SaveZombieDropsConfig(mapname);
 		}
 		
@@ -2391,7 +2417,7 @@ Msg("Including left4fun_functions...\n");
 			if (w.find("weapon_") == null)
 				w = "weapon_melee";
 			
-			player.Drop(w);
+			player.DropItem(w);
 		}
 		
 		if (!(Left4Fun.BuyItems_Give[key].weapon in Left4Fun.UnavailableMelee))

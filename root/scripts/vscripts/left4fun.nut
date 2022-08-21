@@ -366,8 +366,8 @@ const LOG_LEVEL_DEBUG = 4;
 		Left4Fun.Log(LOG_LEVEL_INFO, "Loaded " + c + " store items");
 		
 		Left4Fun.Log(LOG_LEVEL_INFO, "Loading pickups to replace with money...");
-		if (!Left4Fun.LoadReplaceWithMoney())
-			Left4Fun.SaveReplaceWithMoney();
+		c = Left4Fun.LoadReplaceWithMoney();
+		Left4Fun.Log(LOG_LEVEL_INFO, "Loaded " + c + " pickups to replace with money");
 		
 		if (Left4Fun.L4FCvars.gungame) // TODO
 		{
@@ -378,6 +378,9 @@ const LOG_LEVEL_DEBUG = 4;
 
 		if (Left4Fun.L4FCvars.zombiedrops)
 		{
+			Left4Fun.Log(LOG_LEVEL_INFO, "Checking ZombieDrops default file...");
+			Left4Fun.CheckZombieDropsDefault();
+			
 			Left4Fun.Log(LOG_LEVEL_INFO, "Loading ZombieDrops config...");
 			c = Left4Fun.LoadZombieDropsConfig(mapname);
 			Left4Fun.Log(LOG_LEVEL_INFO, "Loaded " + c + " ZombieDrops configs");
