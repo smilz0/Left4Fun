@@ -14,6 +14,31 @@ Msg("Including left4fun_events...\n");
 		if ("OnModeStart" in DirectorScript.GetDirectorOptions())
 			DirectorScript.GetDirectorOptions().OnModeStart();
 	}
+	
+	if (concept == "PlayerPickup")
+	{
+		Left4Fun.Log(LOG_LEVEL_DEBUG, "PlayerPickup - who: " + query.who);
+		
+		local who = Left4Utils.GetSurvivorFromActor(query.who);
+		if (who && who.IsValid() && ("IsSurvivor" in who) && who.IsSurvivor())
+		{
+			local weapon = Left4Utils.GetInventoryItemInSlot(who, INV_SLOT_PRIMARY);
+			if (weapon && weapon.IsValid() && Left4Fun.ReloadFixWeps.find(weapon.GetClassname()) != null)
+			{
+				Left4Fun.ReloadFixClips[weapon.GetEntityIndex()] <- NetProps.GetPropInt(weapon, "m_iClip1");
+				
+				Left4Fun.Log(LOG_LEVEL_DEBUG, "Left4Fun.ReloadFixClips.len() = " + Left4Fun.ReloadFixClips.len());
+			}
+		}
+	}
+	
+	// TODO: TEST
+	if (concept != "SceneCancelled" && ("who" in query))
+	{
+		local who = Left4Utils.GetSurvivorFromActor(query.who);
+		if (Left4Fun.IsOnlineTroll(who))
+			DoEntFire("!self", "CancelCurrentScene", "", 0.01, null, who);
+	}
 }
 
 ::Left4Fun.Events.OnGameEvent_server_cvar <- function (params)
@@ -620,8 +645,13 @@ Msg("Including left4fun_events...\n");
 		
 		// Resync for reload_fix
 		local w = Left4Utils.GetInventoryItemInSlot(player, INV_SLOT_PRIMARY);
-		if (w)
-			NetProps.SetPropInt(w, "m_iClip2", NetProps.GetPropInt(w, "m_iClip1"));
+		if (w && w.IsValid() && Left4Fun.ReloadFixWeps.find(w.GetClassname()) != null)
+		{
+			Left4Fun.ReloadFixClips[w.GetEntityIndex()] <- NetProps.GetPropInt(w, "m_iClip1");
+				
+			Left4Fun.Log(LOG_LEVEL_DEBUG, "Left4Fun.ReloadFixClips.len() = " + Left4Fun.ReloadFixClips.len());
+		}
+			//NetProps.SetPropInt(w, "m_iClip2", NetProps.GetPropInt(w, "m_iClip1"));
 	}
 	else if (NetProps.GetPropInt(player, "m_iTeamNum") == TEAM_L4D1_SURVIVORS)
 	{
@@ -630,8 +660,13 @@ Msg("Including left4fun_events...\n");
 			
 		// Resync for reload_fix
 		local w = Left4Utils.GetInventoryItemInSlot(player, INV_SLOT_PRIMARY);
-		if (w)
-			NetProps.SetPropInt(w, "m_iClip2", NetProps.GetPropInt(w, "m_iClip1"));
+		if (w && w.IsValid() && Left4Fun.ReloadFixWeps.find(w.GetClassname()) != null)
+		{
+			Left4Fun.ReloadFixClips[w.GetEntityIndex()] <- NetProps.GetPropInt(w, "m_iClip1");
+				
+			Left4Fun.Log(LOG_LEVEL_DEBUG, "Left4Fun.ReloadFixClips.len() = " + Left4Fun.ReloadFixClips.len());
+		}
+			//NetProps.SetPropInt(w, "m_iClip2", NetProps.GetPropInt(w, "m_iClip1"));
 	}
 	
 	Left4Fun.ApplyPlayerRenderCVars(player);
@@ -856,11 +891,7 @@ float	victim_z
 	if (Left4Fun.IsOnlineTroll(player))
 		return;
 	
-	local aw = player.GetActiveWeapon();
-	if (aw)
-		NetProps.SetPropInt(aw, "m_iClip2", NetProps.GetPropInt(aw, "m_iClip1") - 1);
-	
-	if (weapon == "vomitjar" || weapon == "pipe_bomb" || weapon == "molotov")
+	if (weapon == "molotov" || weapon == "pipe_bomb" || weapon == "vomitjar")
 	{
 		local userid = player.GetPlayerUserId();
 		local count = 0;
@@ -889,8 +920,16 @@ float	victim_z
 		}
 		
 		Left4Fun.Log(LOG_LEVEL_DEBUG, player.GetPlayerName() + " fired " + weapon + " - count: " + count);
+		
+		return;
 	}
-	else if (weapon == "grenade_launcher")
+
+	local aw = player.GetActiveWeapon();
+	if (aw && aw.GetEntityIndex() in ::Left4Fun.ReloadFixClips)
+		Left4Fun.ReloadFixClips[aw.GetEntityIndex()] = NetProps.GetPropInt(aw, "m_iClip1") - 1;
+		//NetProps.SetPropInt(aw, "m_iClip2", NetProps.GetPropInt(aw, "m_iClip1") - 1);
+	
+	if (weapon == "grenade_launcher")
 	{
 		if (Left4Fun.L4FCvars.gl_airborn_push_force != 0 && (NetProps.GetPropInt(player, "m_fFlags") & 1) == 0)
 			player.ApplyAbsVelocityImpulse(player.EyeAngles().Forward() * Left4Fun.L4FCvars.gl_airborn_push_force * -1);
@@ -900,16 +939,12 @@ float	victim_z
 		if (Left4Fun.L4FCvars.m60_airborn_push_force != 0 && (NetProps.GetPropInt(player, "m_fFlags") & 1) == 0)
 			player.ApplyAbsVelocityImpulse(player.EyeAngles().Forward() * Left4Fun.L4FCvars.m60_airborn_push_force * -1);
 		
-		if (Left4Fun.Settings.m60_fix && aw)
+		if (Left4Fun.Settings.m60_fix && aw && NetProps.GetPropInt(aw, "m_iClip1") <= 1) // m_iClip1 = 1 means that this is the last bullet of the clip
 		{
-			local clip = NetProps.GetPropInt(aw, "m_iClip1");
-			if (clip <= 1) // m_iClip1 = 1 means that this is the last bullet of the clip
-			{
-				NetProps.SetPropFloat(aw, "m_flNextPrimaryAttack", Time() + 0.3);  // Stop firing for a while
-				NetProps.SetPropInt(aw, "m_iClip1", 2); // This, after the event, becomes 1 and it's meant to prevent the weapon drop
+			NetProps.SetPropFloat(aw, "m_flNextPrimaryAttack", Time() + 0.3);  // Stop firing for a while
+			NetProps.SetPropInt(aw, "m_iClip1", 2); // This, after the event, becomes 1 and it's meant to prevent the weapon drop
 			
-				Left4Timers.AddTimer(null, 0.1, Left4Fun.ResetM60Clip, { weapon = aw }, false); // I can't set m_iClip1 to 0 here because the code that drops the weapon runs right after this event, so i reset it a bit later
-			}
+			Left4Timers.AddTimer(null, 0.1, Left4Fun.ResetM60Clip, { weapon = aw }, false); // I can't set m_iClip1 to 0 here because the code that drops the weapon runs right after this event, so i reset it a bit later
 		}
 	}
 }
@@ -929,7 +964,14 @@ float	victim_z
 	if (Left4Fun.ReloadFixWeps.find(weapon.GetClassname()) == null)
 		return;
 	
-	local clip2 = NetProps.GetPropInt(weapon, "m_iClip2");
+	if (!(weapon.GetEntityIndex() in ::Left4Fun.ReloadFixClips))
+	{
+		Left4Fun.Log(LOG_LEVEL_WARN, "OnGameEvent_weapon_reload: weapon with id " + weapon.GetEntityIndex() + " of player " + player.GetPlayerName() + " is not in ReloadFixClips!");
+		return;
+	}
+	
+	//local clip2 = NetProps.GetPropInt(weapon, "m_iClip2");
+	local clip2 = Left4Fun.ReloadFixClips[weapon.GetEntityIndex()];
 	
 	Left4Fun.Log(LOG_LEVEL_DEBUG, "OnGameEvent_weapon_reload: " + player.GetPlayerName() + " - " + manual + " - clip2: " + clip2);
 	
@@ -946,14 +988,19 @@ float	victim_z
 
 ::Left4Fun.Events.OnGameEvent_weapon_drop <- function (params)
 {
-	if (!Left4Fun.Settings.m60_fix)
-		return;
-	
 	local weapon = null;
 	if ("propid" in params)
 		weapon = EntIndexToHScript(params["propid"]);
 	
-	if (!weapon || !weapon.IsValid() || weapon.GetClassname() != "weapon_rifle_m60")
+	if (!weapon || !weapon.IsValid())
+		return;
+	
+	if (weapon.GetEntityIndex() in ::Left4Fun.ReloadFixClips)
+		delete Left4Fun.ReloadFixClips[weapon.GetEntityIndex()];
+	
+	Left4Fun.Log(LOG_LEVEL_DEBUG, "Left4Fun.ReloadFixClips.len() = " + Left4Fun.ReloadFixClips.len());
+	
+	if (!Left4Fun.Settings.m60_fix || weapon.GetClassname() != "weapon_rifle_m60")
 		return;
 	
 	Left4Fun.Log(LOG_LEVEL_DEBUG, "OnGameEvent_weapon_drop - weapon_rifle_m60 dropped");
@@ -1537,7 +1584,7 @@ HooksHub.SetAllowTakeDamage("L4F", ::Left4Fun.AllowTakeDamage);
 	//Left4Fun.Log(LOG_LEVEL_DEBUG, "OnHurt - " + victim.GetPlayerName() + " - damage: " + damageDone + " - nextHealth: " + nextHealth);
 	//Left4Fun.Log(LOG_LEVEL_DEBUG, "OnHurt - " + victim.GetPlayerName() + " - damage: " + damageDone + " - type: " + damageTable.DamageType + " - health: " + (victim.GetHealth() + victim.GetHealthBuffer()));
 	
-	if ((damageTable.DamageType & DMG_FALL) == 0 && (damageTable.DamageType & DMG_CRUSH) == 0 && (damageTable.DamageType & DMG_DROWN) == 0 && NetProps.GetPropInt(victim, "m_iTeamNum") == TEAM_SURVIVORS && (victim.IsIncapacitated() || victim.IsHangingFromLedge()))
+	if ((damageTable.DamageType & DMG_FALL) == 0 && (damageTable.DamageType & DMG_CRUSH) == 0 && (damageTable.DamageType & DMG_DROWN) == 0 && NetProps.GetPropInt(victim, "m_iTeamNum") == TEAM_SURVIVORS && victim.IsIncapacitated())
 	{
 		// Constant dmg type when incap: 131072 (DMG_POISON)
 		// Dmg type with insta death: DMG_CRUSH, DMG_DROWN

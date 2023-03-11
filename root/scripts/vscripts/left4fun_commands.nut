@@ -1700,7 +1700,7 @@ Msg("Including left4fun_commands...\n");
 				
 				foreach (target in targets)
 				{
-					if (!target.IsDead() && !target.IsDying() && (!Left4Fun.L4FCvars.survivor_abilities_removeonincap || (!target.IsIncapacitated() && !target.IsHangingFromLedge())) /*&& !Left4Fun.IsInSafeSpot(target)*/)
+					if (!target.IsDead() && !target.IsDying() && (!Left4Fun.L4FCvars.survivor_abilities_removeonincap || !target.IsIncapacitated()) /*&& !Left4Fun.IsInSafeSpot(target)*/)
 					{
 						if (SurvivorAbilities.AddPreferredAbility(target) && Left4Fun.L4FCvars.survivor_abilities_notifications)
 							Left4Fun.PrintToPlayerChat(target, "Ability started", PRINTCOLOR_GREEN);
@@ -1713,7 +1713,7 @@ Msg("Including left4fun_commands...\n");
 			}
 		}
 		
-		if (!Left4Fun.L4FCvars.survivor_abilities_allow_cmds || player.IsDead() || player.IsDying() || (Left4Fun.L4FCvars.survivor_abilities_removeonincap && (player.IsIncapacitated() || player.IsHangingFromLedge())) || NetProps.GetPropInt(player, "m_iTeamNum") != TEAM_SURVIVORS)
+		if (!Left4Fun.L4FCvars.survivor_abilities_allow_cmds || player.IsDead() || player.IsDying() || (Left4Fun.L4FCvars.survivor_abilities_removeonincap && player.IsIncapacitated()) || NetProps.GetPropInt(player, "m_iTeamNum") != TEAM_SURVIVORS)
 			return;
 		
 		if (Left4Fun.IsInSafeSpot(player))
@@ -1755,7 +1755,7 @@ Msg("Including left4fun_commands...\n");
 				
 				foreach (target in targets)
 				{
-					if (!target.IsDead() && !target.IsDying() && !target.IsIncapacitated() && !target.IsHangingFromLedge())
+					if (!target.IsDead() && !target.IsDying() && !target.IsIncapacitated())
 						SurvivorAbilities.UseAbility(target);
 				}
 				
@@ -1765,7 +1765,7 @@ Msg("Including left4fun_commands...\n");
 			}
 		}
 		
-		if (player.IsDead() || player.IsDying() || player.IsIncapacitated() || player.IsHangingFromLedge() || NetProps.GetPropInt(player, "m_iTeamNum") != TEAM_SURVIVORS)
+		if (player.IsDead() || player.IsDying() || player.IsIncapacitated() || NetProps.GetPropInt(player, "m_iTeamNum") != TEAM_SURVIVORS)
 			return;
 		
 		Left4Fun.Log(LOG_LEVEL_DEBUG, "CMD_ability_use from " + player.GetPlayerName());

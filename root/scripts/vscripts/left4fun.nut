@@ -218,6 +218,7 @@ const LOG_LEVEL_DEBUG = 4;
 		ModelsToPrecache = ["models/infected/witch.mdl", "models/infected/witch_bride.mdl", L4FPICKUP_GIFT_MODEL, L4FPICKUP_MONEY_MODEL]
 		SoundsToPrecache = ["UI/gift_drop.wav", "UI/littlereward.wav", "EDIT_MARK.Enable", "EDIT_MARK.Disable"]
 		ReloadFixWeps = [ "weapon_smg", "weapon_smg_silenced", "weapon_smg_mp5", "weapon_rifle", "weapon_rifle_desert", "weapon_rifle_ak47", "weapon_rifle_sg552", "weapon_hunting_rifle", "weapon_sniper_military", "weapon_rifle_m60", "weapon_sniper_awp", "weapon_sniper_scout" ]
+		ReloadFixClips = {}
 	}
 
 	// cmd buy items

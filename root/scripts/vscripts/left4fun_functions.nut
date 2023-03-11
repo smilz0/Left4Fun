@@ -946,7 +946,7 @@ Msg("Including left4fun_functions...\n");
 
 	::Left4Fun.SelfHelp <- function (player)
 	{
-		if (!player.IsIncapacitated() && !player.IsHangingFromLedge())
+		if (!player.IsIncapacitated())
 			return false;
 	   
 		if (Left4Utils.HasItem(player, "weapon_adrenaline"))
@@ -3262,6 +3262,138 @@ Msg("Including left4fun_functions...\n");
 				}
 			}
 		}
+		
+		if (!pos)
+			return;
+
+		local tgtname = "ping_" + player.GetPlayerUserId();
+		
+		local previous = Entities.FindByName(null, tgtname);
+		if (previous)
+		{
+			local scope = previous.GetScriptScope();
+			if (scope.GlowEnt && scope.GlowEnt.IsValid())
+			{
+				NetProps.SetPropInt(scope.GlowEnt, "m_Glow.m_iGlowType", 0);
+			
+				if ("PingGlow_" + scope.GlowEnt.GetEntityIndex() in ::Left4Timers.Timers)
+					Left4Timers.RemoveTimer("PingGlow_" + scope.GlowEnt.GetEntityIndex());
+			}
+
+			DoEntFire("!self", "Kill", "", 0, null, previous);
+		}
+		
+		local tbl =
+		{
+			targetname = tgtname,
+			spawnflags = 1,
+			origin = pos,
+			//rendermode = 2,
+			rendermode = 0,
+			rendercolor = "255 255 255",
+			renderamt = 255,
+			renderfx = 17,
+			//scale = 0.5,
+			scale = 1,
+			framerate = 0.0,
+			
+			model = "vgui/hud/icon_arrow_plain.vmt"
+			//model = "vgui/hud/icon_locator_generic.vmt"
+			//model = "vgui/icon_download.vmt"
+			//model = "vgui/scroll_down.vmt"
+			//model = "effects/speech_voice.vmt"
+			//model = "editor/scripted_sentence.vmt"
+			//model = "editor/erroricon.vmt"
+		};
+
+		local sprite = SpawnEntityFromTable("env_sprite", tbl);
+		NetProps.SetPropInt(sprite, "m_iTeamNum", team);
+
+		sprite.ValidateScriptScope();
+		local scope = sprite.GetScriptScope();
+		scope.GlowEnt <- ent;
+
+		DoEntFire("!self", "Kill", "", dur, null, sprite);
+
+		if (ent && entGlow)
+		{
+			if ("PingGlow_" + ent.GetEntityIndex() in ::Left4Timers.Timers)
+				Left4Timers.RemoveTimer("PingGlow_" + ent.GetEntityIndex());
+			
+			NetProps.SetPropInt(ent, "m_Glow.m_iGlowType", 3);
+			
+			Left4Timers.AddTimer("PingGlow_" + ent.GetEntityIndex(), dur, ::Left4Fun.PingGlow, { ent = ent }, false);
+		}
+
+		local sound = "EDIT_MARK.Enable";
+		if (isSpecial)
+			sound = "EDIT_MARK.Disable";
+		
+		//local sound = "EDIT_MARK.Enable";
+		//local sound = "Instructor.LessonStart";
+		//local sound = "Instructor.ImportantLessonStart";
+		//local sound = "EDIT.ToggleAttribute";
+		//local sound = "Event.NewAvailableZombie";
+		//local sound = "Christmas.GiftDrop";
+		//local sound = "Hint.Helpful";
+		
+		if (cliSound)
+		{
+			local client = null;
+			while (client = Entities.FindByClassname(client, "player"))
+			{
+				if (!IsPlayerABot(client) && NetProps.GetPropInt(client, "m_iTeamNum") == team)
+					EmitSoundOnClient(sound, client);
+			}
+		}	
+		
+		if (entSound)
+			EmitSoundOn(sound, sprite);
+	}
+	
+	::Left4Fun.PingEnt <- function(player, entity, duration = 7, duration_survivors = 3, duration_infected = 2.5, entGlow = true, cliSound = true, entSound = false)
+	{
+		if (!player || !player.IsValid() || !entity || !entity.IsValid())
+			return;
+		
+		local team = NetProps.GetPropInt(player, "m_iTeamNum");
+		
+		local dur = duration;
+		local ent = entity;
+		local pos = entity.GetCenter() + Vector(0, 0, 20);
+		local isSpecial = false;
+		local entClass = ent.GetClassname();
+		if (entClass.find("weapon_") != null)
+			pos = ent.GetCenter() + Vector(0, 0, 20);
+		else if (entClass == "player")
+		{
+			pos = ent.GetCenter() + Vector(0, 0, 50);
+			
+			if (NetProps.GetPropInt(ent, "m_iTeamNum") == TEAM_INFECTED)
+			{
+				isSpecial = true;
+				dur = duration_infected;
+				
+				if (NetProps.GetPropInt(ent, "m_zombieClass") == Z_TANK)
+					pos += Vector(0, 0, 20);
+			}
+			else
+				dur = duration_survivors;
+		}
+		else if (entClass == "witch")
+		{
+			pos = ent.GetCenter() + Vector(0, 0, 50);
+			
+			isSpecial = true;
+			dur = duration_infected;
+		}
+		else if (entClass == "infected")
+		{
+			pos = ent.GetCenter() + Vector(0, 0, 50);
+			dur = duration_infected;
+		}
+		else
+			ent = null;
 		
 		if (!pos)
 			return;
