@@ -374,12 +374,12 @@ Msg("Including left4fun_admin...\n");
 		local slot = item.tolower();
 		if (slot == "held" || slot == "slot0" || slot == "slot1" || slot == "slot2" || slot == "slot3" || slot == "slot4" || slot == "slot5")
 		{
-			if (slot == "held")
-				slot = "Held";
+			//if (slot == "held")
+			//	slot = "Held";
 			foreach (targetPlayer in targetPlayers)
 			{
 				if (targetPlayer)
-					Left4Utils.RemoveItemBySlot(targetPlayer, slot);
+					Left4Utils.RemoveInventoryItemInSlot(targetPlayer, slot);
 			}
 		}
 		else
@@ -387,7 +387,7 @@ Msg("Including left4fun_admin...\n");
 			foreach (targetPlayer in targetPlayers)
 			{
 				if (targetPlayer)
-					Left4Utils.RemoveItem(targetPlayer, item);
+					Left4Utils.RemoveInventoryItem(targetPlayer, item);
 			}
 		}
 	}

@@ -951,19 +951,19 @@ Msg("Including left4fun_functions...\n");
 	   
 		if (Left4Utils.HasItem(player, "weapon_adrenaline"))
 		{
-			Left4Utils.RemoveItem(player, "weapon_adrenaline");
+			Left4Utils.RemoveInventoryItem(player, "weapon_adrenaline");
 			
 			Left4Fun.ChatNotice(player.GetPlayerName() + " self helped using his adrenaline");
 		}
 		else if (Left4Utils.HasItem(player, "weapon_pain_pills"))
 		{
-			Left4Utils.RemoveItem(player, "weapon_pain_pills");
+			Left4Utils.RemoveInventoryItem(player, "weapon_pain_pills");
 			
 			Left4Fun.ChatNotice(player.GetPlayerName() + " self helped using his pain pills");
 		}
 		else if (Left4Utils.HasItem(player, "weapon_first_aid_kit"))
 		{
-			Left4Utils.RemoveItem(player, "weapon_first_aid_kit");
+			Left4Utils.RemoveInventoryItem(player, "weapon_first_aid_kit");
 			
 			Left4Fun.ChatNotice(player.GetPlayerName() + " self helped using his first aid kit");
 		}

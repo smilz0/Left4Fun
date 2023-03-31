@@ -157,9 +157,14 @@ Msg("Including left4fun_events...\n");
 {
 	Left4Fun.Log(LOG_LEVEL_DEBUG, "OnRoundStart");
 	
+	// Apparently, when scriptedmode is enabled and this director option isn't set, there is a big stutter (for the host)
+	// when a witch is chasing a survivor and that survivor enters the saferoom. Simply having a value for this key, removes the stutter
+	if (!("AllowWitchesInCheckpoints" in DirectorScript.GetDirectorOptions()))
+		DirectorScript.GetDirectorOptions().AllowWitchesInCheckpoints <- false;
+	
 	::ConceptsHub.SetHandler("Left4Fun", Left4Fun.OnConcept);
 	
-	Left4Fun.LoadDirectorVars();	
+	Left4Fun.LoadDirectorVars();
 }
 
 ::Left4Fun.OnModeStart <- function ()
@@ -584,7 +589,8 @@ Msg("Including left4fun_events...\n");
 		{
 			if ((Left4Fun.InfectedLimits[t] - ::Left4Utils.GetAlivePlayersByType(t).len()) < 0)
 			{
-				Left4Fun.DO_next_infected(player);
+				//TODO: All this InfectedLimits next_infected stuff must be rewritten better
+				//Do not kill the player on player_spawn!!!  Left4Fun.DO_next_infected(player);
 				return;
 			}
 		}
