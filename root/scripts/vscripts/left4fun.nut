@@ -15,6 +15,8 @@ if (!IncludeScript("left4lib_hooks"))
 	error("[L4F][ERROR] Failed to include 'left4lib_hooks', please make sure the 'Left 4 Lib' addon is installed and enabled!\n");
 if (!IncludeScript("left4lib_simplehud"))
 	error("[L4F][ERROR] Failed to include 'left4lib_simplehud', please make sure the 'Left 4 Lib' addon is installed and enabled!\n");
+if (!IncludeScript("left4lib_users"))
+	error("[L4F][ERROR] Failed to include 'left4lib_users', please make sure the 'Left 4 Lib' addon is installed and enabled!\n");
 
 IncludeScript("left4fun_requirements");
 
@@ -77,7 +79,6 @@ const LOG_LEVEL_DEBUG = 4;
 		BaseName = "l4f"
 		ModeName = ""
 		MapName = ""
-		Admins = {}
 		Bans = {}
 		Settings =
 		{
@@ -99,11 +100,8 @@ const LOG_LEVEL_DEBUG = 4;
 		PlayersInStartArea = {}
 		PlayersInSafeSpot = {}
 		ModeStarted = false
-		Trolls = {}
 		VsMaxTeamSwitches = -1
 		DirectorVar = null
-		OnlineAdmins = []
-		OnlineTrolls = []
 		VoteAbortedOn = 0
 		VoteKickCaster = -1
 		TanksToSpawn = -1
@@ -214,7 +212,7 @@ const LOG_LEVEL_DEBUG = 4;
 						rescueVehicle = null
 					}
 		SpawningExtraSurvivors = {}
-		JoiningUserids = []
+		//JoiningUserids = []
 		ModelsToPrecache = ["models/infected/witch.mdl", "models/infected/witch_bride.mdl", L4FPICKUP_GIFT_MODEL, L4FPICKUP_MONEY_MODEL]
 		SoundsToPrecache = ["UI/gift_drop.wav", "UI/littlereward.wav", "EDIT_MARK.Enable", "EDIT_MARK.Disable"]
 		ReloadFixWeps = [ "weapon_smg", "weapon_smg_silenced", "weapon_smg_mp5", "weapon_rifle", "weapon_rifle_desert", "weapon_rifle_ak47", "weapon_rifle_sg552", "weapon_hunting_rifle", "weapon_sniper_military", "weapon_rifle_m60", "weapon_sniper_awp", "weapon_sniper_scout" ]
@@ -335,14 +333,6 @@ const LOG_LEVEL_DEBUG = 4;
 		Left4Utils.LoadSettingsFromFile("left4fun/cfg/" + Left4Fun.BaseName + "_settings.txt", "Left4Fun.Settings.", Left4Fun.Log);
 		Left4Utils.SaveSettingsToFile("left4fun/cfg/" + Left4Fun.BaseName + "_settings.txt", ::Left4Fun.Settings, Left4Fun.Log);
 		Left4Utils.PrintSettings(::Left4Fun.Settings, Left4Fun.Log, "[Settings] ");
-		
-		Left4Fun.Log(LOG_LEVEL_INFO, "Loading admins...");
-		::Left4Fun.Admins = Left4Utils.LoadAdminsFromFile("left4fun/cfg/" + Left4Fun.BaseName + "_admins.txt", Left4Fun.Log);
-		Left4Fun.Log(LOG_LEVEL_INFO, "Loaded " + Left4Fun.Admins.len() + " admins");
-		
-		Left4Fun.Log(LOG_LEVEL_INFO, "Loading trolls...");
-		::Left4Fun.Trolls = Left4Utils.LoadAdminsFromFile("left4fun/cfg/" + Left4Fun.BaseName + "_trolls.txt", Left4Fun.Log);
-		Left4Fun.Log(LOG_LEVEL_INFO, "Loaded " + Left4Fun.Trolls.len() + " trolls");
 		
 		Left4Fun.Log(LOG_LEVEL_INFO, "Loading bans...");
 		::Left4Fun.Bans = Left4Utils.LoadAdminsFromFile("left4fun/cfg/" + Left4Fun.BaseName + "_bans.txt", Left4Fun.Log);

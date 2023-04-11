@@ -7,66 +7,6 @@ Msg("Including left4fun_functions...\n");
 
 //if (!("IsAdmin" in ::Left4Fun))
 //{
-	::Left4Fun.DoAdminInit <- function (player)
-	{
-		if (!player)
-			return;
-			
-		if (Left4Fun.Admins.len() > 0)
-			return;
-		
-		local steamid = player.GetNetworkIDString();
-		if (!steamid || steamid == "BOT")
-			return;
-		
-		Left4Fun.Admins[steamid] <- player.GetPlayerName();
-		Left4Utils.SaveAdminsToFile("left4fun/cfg/" + Left4Fun.BaseName + "_admins.txt", ::Left4Fun.Admins);
-		
-		Left4Fun.PrintToPlayerChat(player, "Admin added", PRINTCOLOR_GREEN);
-		
-		local userid = player.GetPlayerUserId();
-		userid = userid.tointeger();
-		if (Left4Fun.OnlineAdmins.find(userid) == null)
-		{
-			Left4Fun.Log(LOG_LEVEL_DEBUG, "Adding admin with userid: " + userid);
-		
-			Left4Fun.OnlineAdmins.push(userid);
-			Left4Fun.OnlineAdmins.sort();
-			
-			Left4Fun.PrintToPlayerChat(player, "You have been added to the online admins list", PRINTCOLOR_GREEN);
-		}
-	}
-
-	::Left4Fun.IsAdmin <- function (player)
-	{
-		if (!player)
-			return false;
-
-		//if (Director.IsSinglePlayerGame() || GetListenServerHost() == player)
-		if (GetListenServerHost() == player)
-			return true;
-		
-		local steamid = player.GetNetworkIDString();
-		if (!steamid)
-			return false;
-
-		if (!(steamid in ::Left4Fun.Admins))
-			return false;
-		
-		return true;
-	}
-
-	::Left4Fun.IsAdminSteamID <- function (steamID)
-	{
-		if (!steamID)
-			return false;
-
-		if (!(steamID in ::Left4Fun.Admins))
-			return false;
-		
-		return true;
-	}
-
 	::Left4Fun.IsBanned <- function (player)
 	{
 		if (!player)
@@ -229,12 +169,7 @@ Msg("Including left4fun_functions...\n");
 		if (level == ST_NOTICE.WARNING || level == ST_NOTICE.ALERT)
 			colorcode = PRINTCOLOR_ORANGE;
 		
-		foreach (userid in Left4Fun.OnlineAdmins)
-		{
-			local player = g_MapScript.GetPlayerFromUserID(userid);
-			if (player)
-				Left4Fun.ClientPrint(player, 3, colorcode + text);
-		}
+		Left4Users.AdminNotice(colorcode + text);
 	}
 
 	::Left4Fun.UserHint <- function (player, text, color = HINTCOLOR_WHITE, icon = "icon_tip", duration = 5)
@@ -269,18 +204,7 @@ Msg("Including left4fun_functions...\n");
 			color2 = PRINTCOLOR_ORANGE;
 		}
 		
-		foreach (userid in Left4Fun.OnlineAdmins)
-		{
-			local player = g_MapScript.GetPlayerFromUserID(userid);
-			if (player)
-			{
-				//player.ShowHint(text, duration, icon, "", color, 0, 0, 0);
-				Left4Fun.ClientPrint(player, 3, color2 + text);
-				
-				if (addToConsole)
-					Left4Fun.PrintToPlayerConsole(player, text)
-			}
-		}
+		Left4Users.AdminNotice(color2 + text);
 	}
 
 	::Left4Fun.GetModFileToLoad <- function ()
@@ -432,54 +356,6 @@ Msg("Including left4fun_functions...\n");
 			return null;
 		
 		return ent;
-	}
-
-	::Left4Fun.IsOnlineAdmin <- function (player)
-	{
-		if (!player || !player.IsValid())
-			return false;
-		
-		if (Left4Fun.OnlineAdmins.find(player.GetPlayerUserId()) != null)
-			return true;
-		else
-			return false;
-	}
-
-	::Left4Fun.IsOnlineTroll <- function (player)
-	{
-		if (!player || !player.IsValid())
-			return false;
-		
-		if (Left4Fun.OnlineTrolls.find(player.GetPlayerUserId()) != null)
-			return true;
-		else
-			return false;
-	}
-
-	::Left4Fun.IsTroll <- function (player)
-	{
-		if (!player || !player.IsValid())
-			return false;
-
-		local steamid = player.GetNetworkIDString();
-		if (!steamid)
-			return false;
-
-		if (!(steamid in ::Left4Fun.Trolls))
-			return false;
-		
-		return true;
-	}
-
-	::Left4Fun.IsTrollSteamID <- function (steamID)
-	{
-		if (!steamID)
-			return false;
-
-		if (!(steamID in ::Left4Fun.Trolls))
-			return false;
-		
-		return true;
 	}
 
 	::Left4Fun.ST_User2String <- function (value)
@@ -2067,57 +1943,6 @@ Msg("Including left4fun_functions...\n");
 		SurvivorAbilities.Update(!Left4Fun.AreAllSurvivorsInSafeSpot());
 	}
 
-	::Left4Fun.PlayerIn <- function (player)
-	{
-		local userid = player.GetPlayerUserId().tointeger();
-		
-		if (Left4Fun.IsAdmin(player))
-		{
-			if (Left4Fun.OnlineAdmins.find(userid) == null)
-			{
-				Left4Fun.Log(LOG_LEVEL_DEBUG, "Adding admin with userid: " + userid);
-		
-				Left4Fun.OnlineAdmins.push(userid);
-				Left4Fun.OnlineAdmins.sort();
-				
-				Left4Fun.PrintToPlayerChat(player, "You have been added to the online admins list", PRINTCOLOR_GREEN);
-			}
-		}
-		
-		if (Left4Fun.IsTroll(player))
-		{
-			if (Left4Fun.OnlineTrolls.find(userid) == null)
-			{
-				Left4Fun.Log(LOG_LEVEL_DEBUG, "Adding troll with userid: " + userid);
-		
-				Left4Fun.OnlineTrolls.push(userid);
-				Left4Fun.OnlineTrolls.sort();
-			}
-			
-			// TODO
-			//Left4Fun.PrintToPlayerChat(player, "You have been added to the online admins list", PRINTCOLOR_GREEN);
-		}
-	}
-
-	::Left4Fun.PlayerOut <- function (player)
-	{
-		local userid = player.GetPlayerUserId().tointeger();
-		
-		local idx = Left4Fun.OnlineAdmins.find(userid);
-		if (idx != null)
-		{
-			Left4Fun.OnlineAdmins.remove(idx);
-			Left4Fun.Log(LOG_LEVEL_DEBUG, "OnlineAdmin removed with idx: " + idx);
-		}
-		
-		idx = Left4Fun.OnlineTrolls.find(userid);
-		if (idx != null)
-		{
-			Left4Fun.OnlineTrolls.remove(idx);
-			Left4Fun.Log(LOG_LEVEL_DEBUG, "OnlineTroll removed with idx: " + idx);
-		}
-	}
-
 	::Left4Fun.DelayedOnWitchSpawned <- function (args)
 	{
 		if (!("witch" in args))
@@ -2214,14 +2039,15 @@ Msg("Including left4fun_functions...\n");
 
 	::Left4Fun.NearIncapAdrenalineBoost <- function (player, health)
 	{
-	  if (Left4Fun.IsOnlineTroll(player))
+	  local pl = Left4Users.GetOnlineUserLevel(player.GetPlayerUserId());
+	  if (pl < L4U_LEVEL.User)
 		return;
 	  
 	  if (Left4Fun.L4FCvars.adrenalineboost == ST_USER.NONE)
 			return;
-		else if (Left4Fun.L4FCvars.adrenalineboost == ST_USER.ADMINS && !Left4Fun.IsOnlineAdmin(player))
+		else if (Left4Fun.L4FCvars.adrenalineboost == ST_USER.ADMINS && pl < L4U_LEVEL.Admin)
 			return;
-		else if (Left4Fun.L4FCvars.adrenalineboost == ST_USER.USERS && Left4Fun.IsOnlineAdmin(player))
+		else if (Left4Fun.L4FCvars.adrenalineboost == ST_USER.USERS && pl >= L4U_LEVEL.Admin)
 			return;
 		
 		if (health <= Left4Fun.L4FCvars.adrenalineboost_health && !player.IsAdrenalineActive())

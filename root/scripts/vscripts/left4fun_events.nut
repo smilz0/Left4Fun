@@ -36,7 +36,7 @@ Msg("Including left4fun_events...\n");
 	if (concept != "SceneCancelled" && ("who" in query))
 	{
 		local who = Left4Utils.GetSurvivorFromActor(query.who);
-		if (Left4Fun.IsOnlineTroll(who))
+		if (who && who.IsValid() && Left4Users.GetOnlineUserLevel(who.GetPlayerUserId()) < L4U_LEVEL.User)
 			DoEntFire("!self", "CancelCurrentScene", "", 0.01, null, who);
 	}
 }
@@ -204,9 +204,6 @@ Msg("Including left4fun_events...\n");
 	
 	if (Left4Fun.L4FCvars.money && !Left4Fun.L4FCvars.money_reset)
 		Left4Fun.LoadBank();
-	
-	foreach (player in ::Left4Utils.GetHumanPlayers())
-		Left4Fun.PlayerIn(player);
 	
 	Left4Fun.RestoreExtraSurvivors();
 	
@@ -436,63 +433,16 @@ Msg("Including left4fun_events...\n");
 	}
 }
 
-::Left4Fun.Events.OnGameEvent_player_connect <- function (params)
-{
-	local userid = Left4Fun.GetParamInt("userid", params);
-	//local player = Left4Fun.GetParamPlayer("userid", params); // player's entity hasn't been created yet
-	local name = Left4Fun.GetParam("name", params);
-	local index = Left4Fun.GetParamInt("index", params);
-	local address = Left4Fun.GetParam("address", params);
-	local steamID = Left4Fun.GetParam("networkid", params);
-	local xuid = Left4Fun.GetParam("xuid", params);
-	local bot = Left4Fun.GetParamBool("bot", params);
-
-	if (bot || steamID == "BOT")
-		return;
-	
-	Left4Fun.Log(LOG_LEVEL_DEBUG, "Player connected: " + name + " - userid: " + userid + " - index: " + index + " - address: " + address + " - steamID: " + steamID + " - xuid: " + xuid + " - bot: " + bot);
-	
-	Left4Fun.JoiningUserids.push(userid);
-	
-	if (name)
-	{
-		Left4Fun.ChatNotice(name + " connected");
-
-		if (Left4Fun.IsAdminSteamID(steamID))
-			Left4Fun.AdminHint(ST_NOTICE.INFO, "Admin " + name + " connected");
-		else if (Left4Fun.IsTrollSteamID(steamID))
-			Left4Fun.AdminHint(ST_NOTICE.WARNING, "Troll " + name + " connected");
-		else
-			Left4Fun.AdminHint(ST_NOTICE.INFO, "Player " + name + " connected");
-	}
-}
-
 ::Left4Fun.Events.OnGameEvent_player_connect_full <- function (params)
 {
 	local userid = Left4Fun.GetParamInt("userid", params);
 	local player = Left4Fun.GetParamPlayer("userid", params);
 	local index = Left4Fun.GetParamInt("index", params);
 	
-	local idx = Left4Fun.JoiningUserids.find(userid);
-	if (idx != null)
-		Left4Fun.JoiningUserids.remove(idx);
-	
 	if (!player || !player.IsValid())
 	{
 		Left4Fun.Log(LOG_LEVEL_ERROR, "OnGameEvent_player_connect_full - player with userid " + userid + " has an invalid player entity");
 		return;
-	}
-	
-	if (idx != null)
-	{
-		Left4Fun.ChatNotice(player.GetPlayerName() + " joined");
-
-		if (Left4Fun.IsAdminSteamID(player.GetNetworkIDString()))
-			Left4Fun.AdminHint(ST_NOTICE.INFO, "Admin " + player.GetPlayerName() + " joined");
-		else if (Left4Fun.IsTrollSteamID(player.GetNetworkIDString()))
-			Left4Fun.AdminHint(ST_NOTICE.WARNING, "Troll " + player.GetPlayerName() + " joined");
-		else
-			Left4Fun.AdminHint(ST_NOTICE.INFO, "Player " + player.GetPlayerName() + " joined");
 	}
 	
 	local steamid = player.GetNetworkIDString();
@@ -506,8 +456,6 @@ Msg("Including left4fun_events...\n");
 		
 		return;
 	}
-	
-	Left4Fun.PlayerIn(player);
 	
 	// Is this even needed? TODO: check
 	foreach (model in ::Left4Fun.ModelsToPrecache)
@@ -533,16 +481,10 @@ Msg("Including left4fun_events...\n");
 	local steamID = Left4Fun.GetParam("networkid", params);
 	local bot = Left4Fun.GetParamBool("bot", params);
 
-	local idx = Left4Fun.JoiningUserids.find(userid);
-	if (idx != null)
-		Left4Fun.JoiningUserids.remove(idx);
-	
 	if (!player || !player.IsValid() || IsPlayerABot(player))
 		return;
 	
 	Left4Fun.Log(LOG_LEVEL_DEBUG, "Player left: " + player.GetPlayerName());
-	
-	Left4Fun.PlayerOut(player);
 	
 	if (NetProps.GetPropInt(player, "m_iTeamNum") == TEAM_SURVIVORS && (player.IsDead() || player.IsDying()))
 		SurvivorAbilities.SurvivorOut(player);
@@ -757,8 +699,9 @@ float	victim_z
 	{
 		local characterName = p.GetPlayerName();
 		Left4Fun.Log(LOG_LEVEL_DEBUG, "Survivor dead: " + characterName);
-	  
-		if (!Left4Fun.IsOnlineTroll(p) && (Left4Fun.L4FCvars.autorespawn == ST_USER.ALL || (Left4Fun.L4FCvars.autorespawn == ST_USER.ADMINS && Left4Fun.IsOnlineAdmin(p)) || (Left4Fun.L4FCvars.autorespawn == ST_USER.USERS && !Left4Fun.IsOnlineAdmin(p))))
+		
+		local pl = Left4Users.GetOnlineUserLevel(p.GetPlayerUserId());
+		if (pl >= L4U_LEVEL.User && (Left4Fun.L4FCvars.autorespawn == ST_USER.ALL || (Left4Fun.L4FCvars.autorespawn == ST_USER.ADMINS && pl >= L4U_LEVEL.Admin) || (Left4Fun.L4FCvars.autorespawn == ST_USER.USERS && pl < L4U_LEVEL.Admin)))
 			Left4Timers.AddTimer(null, Left4Fun.L4FCvars.autorespawn_delay, @(params) Left4Fun.RespawnDeadPlayer(params.userid), { userid = p.GetPlayerUserId() }, false);
 	}
 	
@@ -814,12 +757,20 @@ float	victim_z
  		return;
 	
 	local p = Left4Fun.GetSurvivor(player);
-	if (p && !Left4Fun.IsOnlineTroll(p) && (Left4Fun.L4FCvars.adrenalineboost == ST_USER.ALL || (Left4Fun.L4FCvars.adrenalineboost == ST_USER.ADMINS && Left4Fun.IsOnlineAdmin(p)) || (Left4Fun.L4FCvars.adrenalineboost == ST_USER.USERS && !Left4Fun.IsOnlineAdmin(p))))
-		p.UseAdrenaline(Left4Fun.L4FCvars.adrenalineboost_duration_onrevive);
+	if (p)
+	{
+		local pl = Left4Users.GetOnlineUserLevel(p.GetPlayerUserId());
+		if (pl >= L4U_LEVEL.User && (Left4Fun.L4FCvars.adrenalineboost == ST_USER.ALL || (Left4Fun.L4FCvars.adrenalineboost == ST_USER.ADMINS && pl >= L4U_LEVEL.Admin) || (Left4Fun.L4FCvars.adrenalineboost == ST_USER.USERS && pl < L4U_LEVEL.Admin)))
+			p.UseAdrenaline(Left4Fun.L4FCvars.adrenalineboost_duration_onrevive);
+	}
 	
 	local s = Left4Fun.GetSurvivor(subject);
-	if (s && !Left4Fun.IsOnlineTroll(s) && (Left4Fun.L4FCvars.adrenalineboost == ST_USER.ALL || (Left4Fun.L4FCvars.adrenalineboost == ST_USER.ADMINS && Left4Fun.IsOnlineAdmin(s)) || (Left4Fun.L4FCvars.adrenalineboost == ST_USER.USERS && !Left4Fun.IsOnlineAdmin(s))))
-		s.UseAdrenaline(Left4Fun.L4FCvars.adrenalineboost_duration_onrevive);
+	if (s)
+	{
+		local sl = Left4Users.GetOnlineUserLevel(s.GetPlayerUserId());
+		if (sl >= L4U_LEVEL.User && (Left4Fun.L4FCvars.adrenalineboost == ST_USER.ALL || (Left4Fun.L4FCvars.adrenalineboost == ST_USER.ADMINS && sl >= L4U_LEVEL.Admin) || (Left4Fun.L4FCvars.adrenalineboost == ST_USER.USERS && sl < L4U_LEVEL.Admin)))
+			s.UseAdrenaline(Left4Fun.L4FCvars.adrenalineboost_duration_onrevive);
+	}
 }
 
 ::Left4Fun.Events.OnGameEvent_survivor_call_for_help <- function (params)
@@ -834,13 +785,14 @@ float	victim_z
 		return;
 	}
  	
- 	if (Left4Fun.IsOnlineTroll(p))
+ 	local pl = Left4Users.GetOnlineUserLevel(p.GetPlayerUserId());
+	if (pl < L4U_LEVEL.User)
  		return;
  	
  	local characterName = p.GetPlayerName();
  	Left4Fun.Log(LOG_LEVEL_DEBUG, "Survivor calling for help: " + characterName);
   
-	if (Left4Fun.L4FCvars.autorespawn == ST_USER.ALL || (Left4Fun.L4FCvars.autorespawn == ST_USER.ADMINS && Left4Fun.IsOnlineAdmin(p)) || (Left4Fun.L4FCvars.autorespawn == ST_USER.USERS && !Left4Fun.IsOnlineAdmin(p)))
+	if (Left4Fun.L4FCvars.autorespawn == ST_USER.ALL || (Left4Fun.L4FCvars.autorespawn == ST_USER.ADMINS && pl >= L4U_LEVEL.Admin) || (Left4Fun.L4FCvars.autorespawn == ST_USER.USERS && pl < L4U_LEVEL.Admin))
 	{
 		Left4Utils.RescueSurvivor(p);
  			
@@ -854,7 +806,7 @@ float	victim_z
 	local player = Left4Fun.GetParamPlayer("userid", params);
 	local item = Left4Fun.GetParam("item", params);
 	
-	if (Left4Fun.IsOnlineTroll(player))
+	if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) < L4U_LEVEL.User)
 		return;
 	
 	if (item == "vomitjar" || item == "pipe_bomb" || item == "molotov")
@@ -894,7 +846,8 @@ float	victim_z
 	//local weaponid = Left4Fun.GetParamInt("weaponid", params);
 	//local count = Left4Fun.GetParamInt("count", params); // number of bullets
 	
-	if (Left4Fun.IsOnlineTroll(player))
+	local pl = Left4Users.GetOnlineUserLevel(player.GetPlayerUserId());
+	if (pl < L4U_LEVEL.User)
 		return;
 	
 	if (weapon == "molotov" || weapon == "pipe_bomb" || weapon == "vomitjar")
@@ -905,7 +858,7 @@ float	victim_z
 		local interval = Left4Fun.L4FCvars.utils_restore_interval;
 		local max_count = Left4Fun.L4FCvars.utils_max_restores;
 		
-		if (Left4Fun.IsOnlineAdmin(player))
+		if (pl >= L4U_LEVEL.Admin)
 		{
 			interval = Left4Fun.L4FCvars.utils_restore_interval_adm;
 			max_count = Left4Fun.L4FCvars.utils_max_restores_adm;
@@ -1061,20 +1014,22 @@ float	victim_z
 	{
 		foreach (survivor in ::Left4Utils.GetIncapacitatedSurvivors())
 		{
-			if (Left4Fun.Settings.always_win == ST_USER.ALL || (Left4Fun.Settings.always_win == ST_USER.ADMINS && Left4Fun.IsOnlineAdmin(survivor)) || (Left4Fun.Settings.always_win == ST_USER.USERS && !Left4Fun.IsOnlineAdmin(survivor)))
+			local sl = Left4Users.GetOnlineUserLevel(survivor.GetPlayerUserId());
+			if (Left4Fun.Settings.always_win == ST_USER.ALL || (Left4Fun.Settings.always_win == ST_USER.ADMINS && sl >= L4U_LEVEL.Admin) || (Left4Fun.Settings.always_win == ST_USER.USERS && sl < L4U_LEVEL.Admin))
 				//survivor.ReviveFromIncap();
 				Left4Fun.HelpPlayer(survivor);
 		}
 		foreach (survivor in ::Left4Utils.GetDeadSurvivors())
 		{
-			if (Left4Fun.Settings.always_win == ST_USER.ALL || (Left4Fun.Settings.always_win == ST_USER.ADMINS && Left4Fun.IsOnlineAdmin(survivor)) || (Left4Fun.Settings.always_win == ST_USER.USERS && !Left4Fun.IsOnlineAdmin(survivor)))
+			local sl = Left4Users.GetOnlineUserLevel(survivor.GetPlayerUserId());
+			if (Left4Fun.Settings.always_win == ST_USER.ALL || (Left4Fun.Settings.always_win == ST_USER.ADMINS && sl >= L4U_LEVEL.Admin) || (Left4Fun.Settings.always_win == ST_USER.USERS && sl < L4U_LEVEL.Admin))
 				Left4Fun.RespawnDeadPlayer(survivor.GetPlayerUserId());
 		}
 	}
 	
 	foreach (survivor in ::Left4Utils.GetAliveSurvivors())
 	{
-		if (Left4Fun.IsOnlineTroll(survivor))
+		if (Left4Users.GetOnlineUserLevel(survivor.GetPlayerUserId()) < L4U_LEVEL.User)
 			Left4Utils.KillPlayer(survivor);
 	}
 	
@@ -1144,7 +1099,8 @@ long	type	damage type
 			Left4Fun.PrintToPlayerChat(player, "Ability lost", PRINTCOLOR_ORANGE);
 	}
 	
-	if (Left4Fun.L4FCvars.helpme == ST_USER.ALL || (Left4Fun.L4FCvars.helpme == ST_USER.ADMINS && Left4Fun.IsOnlineAdmin(player)) || (Left4Fun.L4FCvars.helpme == ST_USER.USERS && !Left4Fun.IsOnlineAdmin(player)))
+	local pl = Left4Users.GetOnlineUserLevel(player.GetPlayerUserId());
+	if (Left4Fun.L4FCvars.helpme == ST_USER.ALL || (Left4Fun.L4FCvars.helpme == ST_USER.ADMINS && pl >= L4U_LEVEL.Admin) || (Left4Fun.L4FCvars.helpme == ST_USER.USERS && pl < L4U_LEVEL.Admin))
 	{
 		local itemName = null;
 		if (Left4Utils.HasItem(player, "weapon_adrenaline"))
@@ -1181,7 +1137,8 @@ long	type	damage type
 			Left4Fun.PrintToPlayerChat(player, "Ability lost", PRINTCOLOR_ORANGE);
 	}
 	
-	if (Left4Fun.L4FCvars.helpme == ST_USER.ALL || (Left4Fun.L4FCvars.helpme == ST_USER.ADMINS && Left4Fun.IsOnlineAdmin(player)) || (Left4Fun.L4FCvars.helpme == ST_USER.USERS && !Left4Fun.IsOnlineAdmin(player)))
+	local pl = Left4Users.GetOnlineUserLevel(player.GetPlayerUserId());
+	if (Left4Fun.L4FCvars.helpme == ST_USER.ALL || (Left4Fun.L4FCvars.helpme == ST_USER.ADMINS && pl >= L4U_LEVEL.Admin) || (Left4Fun.L4FCvars.helpme == ST_USER.USERS && pl < L4U_LEVEL.Admin))
 	{
 		local itemName = null;
 		if (Left4Utils.HasItem(player, "weapon_adrenaline"))
@@ -1230,13 +1187,14 @@ long	type	damage type
 	//if (entity.GetName().find("checkpoint_") != null)
 	//	return; // Do not push the saferoom doors or they will fly away
 	
-	if (Left4Fun.L4FCvars.supershove == ST_USER.NONE || Left4Fun.IsOnlineTroll(attacker))
+	local al = Left4Users.GetOnlineUserLevel(attacker.GetPlayerUserId());
+	if (Left4Fun.L4FCvars.supershove == ST_USER.NONE || al < L4U_LEVEL.User)
 		return;
 
-	if (Left4Fun.L4FCvars.supershove == ST_USER.ADMINS && !Left4Fun.IsOnlineAdmin(attacker))
+	if (Left4Fun.L4FCvars.supershove == ST_USER.ADMINS && al < L4U_LEVEL.Admin)
 		return;
 
-	if (Left4Fun.L4FCvars.supershove == ST_USER.USERS && Left4Fun.IsOnlineAdmin(attacker))
+	if (Left4Fun.L4FCvars.supershove == ST_USER.USERS && al >= L4U_LEVEL.Admin)
 		return;
 
 	if (Left4Fun.L4FCvars.supershove_type == CV_SUPERSHOVETYPE.PUSH)
@@ -1254,19 +1212,20 @@ long	type	damage type
 	
 	//Left4Fun.Log(LOG_LEVEL_DEBUG, player.GetPlayerName() + " shoved by " + attacker.GetPlayerName());
 	
-	if (Left4Fun.IsOnlineTroll(attacker))
+	local al = Left4Users.GetOnlineUserLevel(attacker.GetPlayerUserId());
+	if (al < L4U_LEVEL.User)
 		return;
 	
 	if (Left4Fun.L4FCvars.supershove == ST_USER.NONE)
 		return;
 
-	if (Left4Fun.L4FCvars.supershove_onadmin == 0 && Left4Fun.IsOnlineAdmin(player))
+	if (Left4Fun.L4FCvars.supershove_onadmin == 0 && Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) >= L4U_LEVEL.Admin)
 		return;
 
-	if (Left4Fun.L4FCvars.supershove == ST_USER.ADMINS && !Left4Fun.IsOnlineAdmin(attacker))
+	if (Left4Fun.L4FCvars.supershove == ST_USER.ADMINS && al < L4U_LEVEL.Admin)
 		return;
 
-	if (Left4Fun.L4FCvars.supershove == ST_USER.USERS && Left4Fun.IsOnlineAdmin(attacker))
+	if (Left4Fun.L4FCvars.supershove == ST_USER.USERS && al >= L4U_LEVEL.Admin)
 		return;
 	
 	if (Left4Fun.L4FCvars.supershove_type == CV_SUPERSHOVETYPE.PUSH)
@@ -1294,15 +1253,16 @@ long	type	damage type
 	
 	//Left4Fun.DebugChatNotice("OnJumpApex - " + player.GetPlayerName());
 
-	if (Left4Fun.L4FCvars.superjump == ST_USER.NONE || Left4Fun.IsOnlineTroll(player))
+	local pl = Left4Users.GetOnlineUserLevel(player.GetPlayerUserId());
+	if (Left4Fun.L4FCvars.superjump == ST_USER.NONE || pl < L4U_LEVEL.User)
 		return;
 	
 	if (!IsPlayerABot(player) && (player.GetButtonMask() & (1 << 1)) > 0)
 	{
-		if (Left4Fun.L4FCvars.superjump == ST_USER.ADMINS && !Left4Fun.IsOnlineAdmin(player))
+		if (Left4Fun.L4FCvars.superjump == ST_USER.ADMINS && pl < L4U_LEVEL.Admin)
 			return;
 
-		if (Left4Fun.L4FCvars.superjump == ST_USER.USERS && Left4Fun.IsOnlineAdmin(player))
+		if (Left4Fun.L4FCvars.superjump == ST_USER.USERS && pl >= L4U_LEVEL.Admin)
 			return;
 		
 		local v = player.GetVelocity();
@@ -1559,7 +1519,8 @@ HooksHub.SetAllowTakeDamage("L4F", ::Left4Fun.AllowTakeDamage);
 	if (damageDone <= 0 || victim == null)
 		return damageDone;
 	
-	if (Left4Fun.IsOnlineTroll(victim))
+	local vl = Left4Users.GetOnlineUserLevel(victim.GetPlayerUserId());
+	if (vl < L4U_LEVEL.User)
 		return damageDone * Left4Fun.Settings.troll_damagefactor;
 	
 	if (attacker != null && attacker.IsPlayer() && NetProps.GetPropInt(attacker, "m_iTeamNum") == TEAM_SPECTATORS)
@@ -1576,7 +1537,7 @@ HooksHub.SetAllowTakeDamage("L4F", ::Left4Fun.AllowTakeDamage);
 		if (Left4Fun.Settings.god_on_revive && victim.IsIncapacitated() && NetProps.GetPropInt(victim, "m_reviveOwner") > 0)
 			return 0; // God Mode when revived (this way you can revive without interruptions like the bots do)
 		
-		if (Left4Fun.Settings.godmode == ST_USER.ALL || (Left4Fun.Settings.godmode == ST_USER.ADMINS && Left4Fun.IsOnlineAdmin(victim)) || (Left4Fun.Settings.godmode == ST_USER.USERS && !Left4Fun.IsOnlineAdmin(victim)))
+		if (Left4Fun.Settings.godmode == ST_USER.ALL || (Left4Fun.Settings.godmode == ST_USER.ADMINS && vl >= L4U_LEVEL.Admin) || (Left4Fun.Settings.godmode == ST_USER.USERS && vl < L4U_LEVEL.Admin))
 			return 0; // God Mode
 
 		if ("Inflictor" in damageTable && damageTable.Inflictor && damageTable.Inflictor.GetName().find("SURVAB_NOFF_") != null && NetProps.GetPropInt(attacker, "m_iTeamNum") == NetProps.GetPropInt(victim, "m_iTeamNum"))
@@ -1598,7 +1559,7 @@ HooksHub.SetAllowTakeDamage("L4F", ::Left4Fun.AllowTakeDamage);
 		
 		if (nextHealth <= Left4Fun.L4FCvars.helpme_auto_health)
 		{
-			if (Left4Fun.L4FCvars.helpme == ST_USER.ALL || (Left4Fun.L4FCvars.helpme == ST_USER.ADMINS && Left4Fun.IsOnlineAdmin(victim)) || (Left4Fun.L4FCvars.helpme == ST_USER.USERS && !Left4Fun.IsOnlineAdmin(victim)))
+			if (Left4Fun.L4FCvars.helpme == ST_USER.ALL || (Left4Fun.L4FCvars.helpme == ST_USER.ADMINS && vl >= L4U_LEVEL.Admin) || (Left4Fun.L4FCvars.helpme == ST_USER.USERS && vl < L4U_LEVEL.Admin))
  			{
 				if (Left4Fun.SelfHelp(victim))
 					return 0;

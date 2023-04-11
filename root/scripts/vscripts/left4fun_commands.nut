@@ -9,18 +9,13 @@ Msg("Including left4fun_commands...\n");
 //{
 	::Left4Fun.HandleCommand <- function (player, cmd, args)
 	{
-		if (player == null || !player.IsValid() /*|| !Left4Fun.IsOnlineAdmin(player)*/)
+		if (player == null || !player.IsValid() /*|| Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) < L4U_LEVEL.Admin*/)
 			return;
 			
 		Left4Fun.Log(LOG_LEVEL_DEBUG, "Left4Fun.HandleCommand - " + player.GetPlayerName() + " - cmd: " + cmd + " - args: " + args.len());
 			
 		switch (cmd)
 		{
-			case "admins":
-			{
-				Left4Fun.CMD_admins(player, args);
-				break;
-			}
 			case "bspawn":
 			{
 				Left4Fun.CMD_bspawn(player, args);
@@ -81,11 +76,6 @@ Msg("Including left4fun_commands...\n");
 				Left4Fun.CMD_release_tank(player, args);
 				break;
 			}		
-			case "l4f_admin_init":
-			{
-				Left4Fun.CMD_l4f_admin_init(player, args); // TODO: remove and do it automatically like in L4B
-				break;
-			}
 			case "settings":
 			{
 				Left4Fun.CMD_settings(player, args);
@@ -114,11 +104,6 @@ Msg("Including left4fun_commands...\n");
 			case "speak_scene":
 			{
 				Left4Fun.CMD_speak_scene(player, args);
-				break;
-			}
-			case "trolls":
-			{
-				Left4Fun.CMD_trolls(player, args);
 				break;
 			}
 			case "setprice":
@@ -209,7 +194,7 @@ Msg("Including left4fun_commands...\n");
 
 	::Left4Fun.CMD_help <- function (player, args)
 	{
-		if (Left4Fun.IsOnlineTroll(player))
+		if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) < L4U_LEVEL.User)
 			return;
 		
 		local command = Left4Fun.GetArg(0, args);
@@ -277,7 +262,7 @@ Msg("Including left4fun_commands...\n");
 			{
 				local txt = "";
 				
-				if (Left4Fun.L4FCvars.helpme == ST_USER.ALL || (Left4Fun.L4FCvars.helpme == ST_USER.ADMINS && Left4Fun.IsOnlineAdmin(player)) || (Left4Fun.L4FCvars.helpme == ST_USER.USERS && !Left4Fun.IsOnlineAdmin(player)))
+				if (Left4Fun.L4FCvars.helpme == ST_USER.ALL || (Left4Fun.L4FCvars.helpme == ST_USER.ADMINS && Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) >= L4U_LEVEL.Admin) || (Left4Fun.L4FCvars.helpme == ST_USER.USERS && Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) < L4U_LEVEL.Admin))
 					txt = "helpme";
 				
 				if (Left4Fun.L4FCvars.money)
@@ -308,10 +293,11 @@ Msg("Including left4fun_commands...\n");
 		if (!p)
 			return;
 		
-		if (Left4Fun.IsOnlineTroll(p))
+		local pl = Left4Users.GetOnlineUserLevel(p.GetPlayerUserId());
+		if (pl < L4U_LEVEL.User)
 			return;
 		
-		if (Left4Fun.L4FCvars.helpme == ST_USER.ALL || (Left4Fun.L4FCvars.helpme == ST_USER.ADMINS && Left4Fun.IsOnlineAdmin(p)) || (Left4Fun.L4FCvars.helpme == ST_USER.USERS && !Left4Fun.IsOnlineAdmin(p)))
+		if (Left4Fun.L4FCvars.helpme == ST_USER.ALL || (Left4Fun.L4FCvars.helpme == ST_USER.ADMINS && pl >= L4U_LEVEL.Admin) || (Left4Fun.L4FCvars.helpme == ST_USER.USERS && pl < L4U_LEVEL.Admin))
 		{
 			Left4Fun.Log(LOG_LEVEL_DEBUG, "CMD_helpme from " + p.GetPlayerName());
 			
@@ -325,7 +311,7 @@ Msg("Including left4fun_commands...\n");
 		if (!p)
 			return;
 		
-		if (Left4Fun.IsOnlineTroll(p))
+		if (Left4Users.GetOnlineUserLevel(p.GetPlayerUserId()) < L4U_LEVEL.User)
 			return;
 		
 		Left4Fun.Log(LOG_LEVEL_DEBUG, "CMD_money from " + player.GetPlayerName());
@@ -339,7 +325,7 @@ Msg("Including left4fun_commands...\n");
 		if (!p)
 			return;
 		
-		if (Left4Fun.IsOnlineTroll(p))
+		if (Left4Users.GetOnlineUserLevel(p.GetPlayerUserId()) < L4U_LEVEL.User)
 			return;
 		
 		local item = Left4Fun.GetArg(0, args);
@@ -375,7 +361,7 @@ Msg("Including left4fun_commands...\n");
 		if (!p)
 			return;
 		
-		if (Left4Fun.IsOnlineTroll(p))
+		if (Left4Users.GetOnlineUserLevel(p.GetPlayerUserId()) < L4U_LEVEL.User)
 			return;
 		
 		local item = Left4Fun.GetArg(0, args);
@@ -411,7 +397,7 @@ Msg("Including left4fun_commands...\n");
 		if (!p)
 			return;
 		
-		if (Left4Fun.IsOnlineTroll(p))
+		if (Left4Users.GetOnlineUserLevel(p.GetPlayerUserId()) < L4U_LEVEL.User)
 			return;
 		
 		Left4Fun.Log(LOG_LEVEL_DEBUG, "CMD_drop_money from " + player.GetPlayerName());
@@ -437,7 +423,7 @@ Msg("Including left4fun_commands...\n");
 		if (!p)
 			return;
 		
-		//if (Left4Fun.IsOnlineTroll(p))
+		//if (Left4Users.GetOnlineUserLevel(p.GetPlayerUserId()) < L4U_LEVEL.User)
 		//	return;
 		
 		local target = Left4Fun.GetArg(0, args);
@@ -485,7 +471,7 @@ Msg("Including left4fun_commands...\n");
 
 	::Left4Fun.CMD_team <- function (player, args)
 	{
-		if (Left4Fun.IsOnlineTroll(player))
+		if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) < L4U_LEVEL.User)
 			return;
 		
 		local team = Left4Fun.GetArg(0, args);
@@ -512,10 +498,10 @@ Msg("Including left4fun_commands...\n");
 		if (!player.IsGhost())
 			return;
 		
-		if (Left4Fun.IsOnlineTroll(player))
+		if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) < L4U_LEVEL.User)
 			return;
 		
-		// TODO: if (Left4Fun.L4FCvars.todo == ST_USER.ALL || (Left4Fun.L4FCvars.todo == ST_USER.ADMINS && Left4Fun.IsOnlineAdmin(p)) || (Left4Fun.L4FCvars.todo == ST_USER.USERS && !Left4Fun.IsOnlineAdmin(p)))
+		// TODO: if (Left4Fun.L4FCvars.todo == ST_USER.ALL || (Left4Fun.L4FCvars.todo == ST_USER.ADMINS && Left4Users.GetOnlineUserLevel(p.GetPlayerUserId()) >= L4U_LEVEL.Admin) || (Left4Fun.L4FCvars.todo == ST_USER.USERS && Left4Users.GetOnlineUserLevel(p.GetPlayerUserId()) < L4U_LEVEL.Admin))
 		
 		Left4Fun.DO_next_infected(player);
 	}
@@ -530,159 +516,9 @@ Msg("Including left4fun_commands...\n");
 
 	// ------ ADMIN COMMANDS --------
 
-	::Left4Fun.CMD_l4f_admin_init <- function (player, args)
-	{
-		Left4Fun.DoAdminInit(player);
-	}
-
-	::Left4Fun.CMD_admins <- function (player, args)
-	{
-		if (!Left4Fun.IsOnlineAdmin(player))
-			return;
-
-		local cmd = Left4Fun.GetArg(0, args);
-		if (!cmd)
-		{
-			Left4Fun.PrintToPlayerChat(player, "Invalid parameters", PRINTCOLOR_ORANGE);
-			return;
-		}
-		cmd = cmd.tolower();
-
-		local target = Left4Fun.GetArg(1, args);
-		Left4Fun.Log(LOG_LEVEL_DEBUG, "CMD_admins from " + player.GetPlayerName() + " - cmd: " + cmd + " - target: " + target);
-		
-		if (target)
-		{
-			target = Left4Utils.GetPlayerFromName(target);
-			if (target && IsPlayerABot(target) && NetProps.GetPropInt(target, "m_humanSpectatorUserID") > 0)
-				target = g_MapScript.GetPlayerFromUserID(NetProps.GetPropInt(target, "m_humanSpectatorUserID"));
-			
-			if (target && IsPlayerABot(target))
-				target = null;
-		}
-		
-		switch (cmd)
-		{
-			case "add":
-			{
-				if (!target)
-				{
-					Left4Fun.PrintToPlayerChat(player, "Invalid target", PRINTCOLOR_ORANGE);
-					return;
-				}
-				
-				local steamid = target.GetNetworkIDString();
-				if (!steamid)
-				{
-					Left4Fun.PrintToPlayerChat(player, "Invalid target", PRINTCOLOR_ORANGE);
-					return;
-				}
-				
-				if (steamid in Left4Fun.Admins)
-				{
-					Left4Fun.PrintToPlayerChat(player, "Player is already in admins list", PRINTCOLOR_ORANGE);
-					return;
-				}
-				
-				Left4Fun.Admins[steamid] <- target.GetPlayerName();
-				Left4Utils.SaveAdminsToFile("left4fun/cfg/" + Left4Fun.BaseName + "_admins.txt", ::Left4Fun.Admins);
-				
-				Left4Fun.PrintToPlayerChat(player, "Admin added", PRINTCOLOR_GREEN);
-				
-				local userid = target.GetPlayerUserId();
-				userid = userid.tointeger();
-				if (Left4Fun.OnlineAdmins.find(userid) == null)
-				{
-					Left4Fun.Log(LOG_LEVEL_DEBUG, "Adding admin with userid: " + userid);
-				
-					Left4Fun.OnlineAdmins.push(userid);
-					Left4Fun.OnlineAdmins.sort();
-					
-					Left4Fun.PrintToPlayerChat(target, "You have been added to the online admins list", PRINTCOLOR_GREEN);
-				}
-				
-				break;
-			}
-			case "remove":
-			{
-				if (!target)
-				{
-					Left4Fun.PrintToPlayerChat(player, "Invalid target", PRINTCOLOR_ORANGE);
-					return;
-				}
-				
-				local steamid = target.GetNetworkIDString();
-				if (!steamid)
-				{
-					Left4Fun.PrintToPlayerChat(player, "Invalid target", PRINTCOLOR_ORANGE);
-					return;
-				}
-				
-				if (!(steamid in Left4Fun.Admins))
-				{
-					Left4Fun.PrintToPlayerChat(player, "Player is not in admins list", PRINTCOLOR_ORANGE);
-					return;
-				}
-				
-				delete ::Left4Fun.Admins[steamid];
-				Left4Utils.SaveAdminsToFile("left4fun/cfg/" + Left4Fun.BaseName + "_admins.txt", ::Left4Fun.Admins);
-				
-				Left4Fun.PrintToPlayerChat(player, "Admin removed", PRINTCOLOR_GREEN);
-				
-				if (GetListenServerHost() != target)
-				{
-					local userid = target.GetPlayerUserId();
-					userid = userid.tointeger();
-					local idx = Left4Fun.OnlineAdmins.find(userid);
-					if (idx != null)
-					{
-						Left4Fun.OnlineAdmins.remove(idx);
-						Left4Fun.Log(LOG_LEVEL_DEBUG, "OnlineAdmin removed with idx: " + idx);
-						
-						Left4Fun.PrintToPlayerChat(target, "You have been removed from the online admins list", PRINTCOLOR_ORANGE);
-					}
-				}
-				
-				break;
-			}
-			default:
-			{
-				local humanPlayers = ::Left4Utils.GetHumanPlayers();
-				if (!humanPlayers)
-				{
-					Left4Fun.PrintToPlayerChat(player, "No human player found!", PRINTCOLOR_ORANGE);
-					return;
-				}
-				
-				local adminNames = null;
-				foreach (human in humanPlayers)
-				{
-					if (human)
-					{
-						local steamid = human.GetNetworkIDString();
-						if (steamid && (steamid in Left4Fun.Admins))
-						{
-							if (!adminNames)
-								adminNames = human.GetPlayerName();
-							else
-								adminNames += ", " + human.GetPlayerName();
-						}
-					}
-				}
-				
-				if (!adminNames)
-					Left4Fun.PrintToPlayerChat(player, "No admin online", PRINTCOLOR_NORMAL);
-				else
-					Left4Fun.PrintToPlayerChat(player, "Admins online: " + adminNames, PRINTCOLOR_NORMAL);
-				
-				break;
-			}
-		}
-	}
-
 	::Left4Fun.CMD_settings <- function (player, args)
 	{
-		if (!Left4Fun.IsOnlineAdmin(player))
+		if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) < L4U_LEVEL.Admin)
 			return;
 		
 		local setting = Left4Fun.GetArg(0, args);
@@ -706,7 +542,7 @@ Msg("Including left4fun_commands...\n");
 	// for persistent cvars
 	::Left4Fun.CMD_pcvar <- function (player, args)
 	{
-		if (!Left4Fun.IsOnlineAdmin(player))
+		if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) < L4U_LEVEL.Admin)
 			return;
 		
 		local varName = Left4Fun.GetArg(0, args);
@@ -744,7 +580,7 @@ Msg("Including left4fun_commands...\n");
 	// for persistent cvars
 	::Left4Fun.CMD_pcvars <- function (player, args)
 	{
-		if (!Left4Fun.IsOnlineAdmin(player))
+		if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) < L4U_LEVEL.Admin)
 			return;
 		
 		local cmd = Left4Fun.GetArg(0, args);
@@ -791,7 +627,7 @@ Msg("Including left4fun_commands...\n");
 
 	::Left4Fun.CMD_load_cvars <- function (player, args)
 	{
-		if (!Left4Fun.IsOnlineAdmin(player))
+		if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) < L4U_LEVEL.Admin)
 			return;
 		
 		local fileName = Left4Fun.GetArg(0, args);
@@ -811,7 +647,7 @@ Msg("Including left4fun_commands...\n");
 
 	::Left4Fun.CMD_bspawn <- function (player, args)
 	{
-		if (!Left4Fun.IsOnlineAdmin(player))
+		if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) < L4U_LEVEL.Admin)
 			return;
 		
 		local location = Left4Utils.GetLookingPosition(player);
@@ -843,7 +679,7 @@ Msg("Including left4fun_commands...\n");
 
 	::Left4Fun.CMD_zspawn <- function (player, args)
 	{
-		if (!Left4Fun.IsOnlineAdmin(player))
+		if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) < L4U_LEVEL.Admin)
 			return;
 		
 		local infectedType = Left4Fun.GetArg(0, args);
@@ -902,7 +738,7 @@ Msg("Including left4fun_commands...\n");
 
 	::Left4Fun.CMD_end <- function (player, args)
 	{
-		if (!Left4Fun.IsOnlineAdmin(player))
+		if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) < L4U_LEVEL.Admin)
 			return;
 		
 		Left4Fun.Log(LOG_LEVEL_DEBUG, "CMD_end from " + player.GetPlayerName());
@@ -913,7 +749,7 @@ Msg("Including left4fun_commands...\n");
 	// Ex: PlayerLaugh
 	::Left4Fun.CMD_speak_command <- function (player, args)
 	{
-		if (!Left4Fun.IsOnlineAdmin(player))
+		if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) < L4U_LEVEL.Admin)
 			return;
 		
 		local target = Left4Fun.GetArg(0, args);
@@ -944,7 +780,7 @@ Msg("Including left4fun_commands...\n");
 	// Ex: "scenes/TeenGirl/DLC1_C6M3_L4D1FinaleCinematic15.vcd" or just "DLC1_C6M3_L4D1FinaleCinematic15"
 	::Left4Fun.CMD_speak_scene <- function (player, args)
 	{
-		if (!Left4Fun.IsOnlineAdmin(player))
+		if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) < L4U_LEVEL.Admin)
 			return;
 		
 		local target = Left4Fun.GetArg(0, args);
@@ -972,147 +808,9 @@ Msg("Including left4fun_commands...\n");
 		}
 	}
 
-	::Left4Fun.CMD_trolls <- function (player, args)
-	{
-		if (!Left4Fun.IsOnlineAdmin(player))
-			return;
-
-		local cmd = Left4Fun.GetArg(0, args);
-		if (!cmd)
-		{
-			Left4Fun.PrintToPlayerChat(player, "Invalid parameters", PRINTCOLOR_ORANGE);
-			return;
-		}
-		cmd = cmd.tolower();
-
-		local target = Left4Fun.GetArg(1, args);
-		Left4Fun.Log(LOG_LEVEL_DEBUG, "CMD_trolls from " + player.GetPlayerName() + " - cmd: " + cmd + " - target: " + target);
-		
-		if (target)
-		{
-			target = Left4Utils.GetPlayerFromName(target);
-			if (target && IsPlayerABot(target) && NetProps.GetPropInt(target, "m_humanSpectatorUserID") > 0)
-				target = g_MapScript.GetPlayerFromUserID(NetProps.GetPropInt(target, "m_humanSpectatorUserID"));
-			
-			if (target && IsPlayerABot(target))
-				target = null;
-		}
-		
-		switch (cmd)
-		{
-			case "add":
-			{
-				if (!target)
-				{
-					Left4Fun.PrintToPlayerChat(player, "Invalid target", PRINTCOLOR_ORANGE);
-					return;
-				}
-				
-				local steamid = target.GetNetworkIDString();
-				if (!steamid)
-				{
-					Left4Fun.PrintToPlayerChat(player, "Invalid target", PRINTCOLOR_ORANGE);
-					return;
-				}
-				
-				if (steamid in Left4Fun.Trolls)
-				{
-					Left4Fun.PrintToPlayerChat(player, "Player is already in trolls list", PRINTCOLOR_ORANGE);
-					return;
-				}
-				
-				Left4Fun.Trolls[steamid] <- target.GetPlayerName();
-				Left4Utils.SaveAdminsToFile("left4fun/cfg/" + Left4Fun.BaseName + "_trolls.txt", ::Left4Fun.Trolls);
-				
-				Left4Fun.PrintToPlayerChat(player, "Troll added", PRINTCOLOR_GREEN);
-				
-				local userid = target.GetPlayerUserId();
-				userid = userid.tointeger();
-				if (Left4Fun.OnlineTrolls.find(userid) == null)
-				{
-					Left4Fun.Log(LOG_LEVEL_DEBUG, "Adding troll with userid: " + userid);
-				
-					Left4Fun.OnlineTrolls.push(userid);
-					Left4Fun.OnlineTrolls.sort();
-				}
-				
-				break;
-			}
-			case "remove":
-			{
-				if (!target)
-				{
-					Left4Fun.PrintToPlayerChat(player, "Invalid target", PRINTCOLOR_ORANGE);
-					return;
-				}
-				
-				local steamid = target.GetNetworkIDString();
-				if (!steamid)
-				{
-					Left4Fun.PrintToPlayerChat(player, "Invalid target", PRINTCOLOR_ORANGE);
-					return;
-				}
-				
-				if (!(steamid in Left4Fun.Trolls))
-				{
-					Left4Fun.PrintToPlayerChat(player, "Player is not in trolls list", PRINTCOLOR_ORANGE);
-					return;
-				}
-				
-				delete ::Left4Fun.Trolls[steamid];
-				Left4Utils.SaveAdminsToFile("left4fun/cfg/" + Left4Fun.BaseName + "_trolls.txt", ::Left4Fun.Trolls);
-				
-				Left4Fun.PrintToPlayerChat(player, "Troll removed", PRINTCOLOR_GREEN);
-				
-				local userid = target.GetPlayerUserId();
-				userid = userid.tointeger();
-				local idx = Left4Fun.OnlineTrolls.find(userid);
-				if (idx != null)
-				{
-					Left4Fun.OnlineTrolls.remove(idx);
-					Left4Fun.Log(LOG_LEVEL_DEBUG, "OnlineTroll removed with idx: " + idx);
-				}
-				
-				break;
-			}
-			default:
-			{
-				local humanPlayers = ::Left4Utils.GetHumanPlayers();
-				if (!humanPlayers)
-				{
-					Left4Fun.PrintToPlayerChat(player, "No human player found!", PRINTCOLOR_ORANGE);
-					return;
-				}
-				
-				local trollNames = null;
-				foreach (human in humanPlayers)
-				{
-					if (human)
-					{
-						local steamid = human.GetNetworkIDString();
-						if (steamid && (steamid in Left4Fun.Trolls))
-						{
-							if (!trollNames)
-								trollNames = human.GetPlayerName();
-							else
-								trollNames += ", " + human.GetPlayerName();
-						}
-					}
-				}
-				
-				if (!trollNames)
-					Left4Fun.PrintToPlayerChat(player, "No troll online", PRINTCOLOR_NORMAL);
-				else
-					Left4Fun.PrintToPlayerChat(player, "Trolls online: " + trollNames, PRINTCOLOR_NORMAL);
-				
-				break;
-			}
-		}
-	}
-
 	::Left4Fun.CMD_setprice <- function (player, args)
 	{
-		if (!Left4Fun.IsOnlineAdmin(player))
+		if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) < L4U_LEVEL.Admin)
 			return;
 		
 		local item = Left4Fun.GetArg(0, args);
@@ -1167,7 +865,7 @@ Msg("Including left4fun_commands...\n");
 
 	::Left4Fun.CMD_force_buy <- function (player, args)
 	{
-		if (!Left4Fun.IsOnlineAdmin(player))
+		if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) < L4U_LEVEL.Admin)
 			return;
 		
 		local target = Left4Fun.GetArg(0, args);
@@ -1218,7 +916,7 @@ Msg("Including left4fun_commands...\n");
 
 	::Left4Fun.CMD_bank_amount <- function (player, args)
 	{
-		if (!Left4Fun.IsOnlineAdmin(player))
+		if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) < L4U_LEVEL.Admin)
 			return;
 		
 		local target = Left4Fun.GetArg(0, args);
@@ -1280,7 +978,7 @@ Msg("Including left4fun_commands...\n");
 
 	::Left4Fun.CMD_botcmd <- function (player, args)
 	{
-		if (!Left4Fun.IsOnlineAdmin(player))
+		if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) < L4U_LEVEL.Admin)
 			return;
 		
 		local cmd = Left4Fun.GetArg(0, args);
@@ -1388,7 +1086,7 @@ Msg("Including left4fun_commands...\n");
 
 	::Left4Fun.CMD_switchteam <- function (player, args)
 	{
-		if (!Left4Fun.IsOnlineAdmin(player))
+		if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) < L4U_LEVEL.Admin)
 			return;
 		
 		local target = Left4Fun.GetArg(0, args);
@@ -1435,7 +1133,7 @@ Msg("Including left4fun_commands...\n");
 
 	::Left4Fun.CMD_help_player <- function (player, args)
 	{
-		if (!Left4Fun.IsOnlineAdmin(player))
+		if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) < L4U_LEVEL.Admin)
 			return;
 		
 		local target = Left4Fun.GetArg(0, args);
@@ -1461,7 +1159,7 @@ Msg("Including left4fun_commands...\n");
 	// TODO: remove
 	::Left4Fun.CMD_setteam <- function (player, args)
 	{
-		if (!Left4Fun.IsOnlineAdmin(player))
+		if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) < L4U_LEVEL.Admin)
 			return;
 		
 		local target = Left4Fun.GetArg(0, args);
@@ -1490,7 +1188,7 @@ Msg("Including left4fun_commands...\n");
 	// TODO: remove
 	::Left4Fun.CMD_invisible <- function (player, args)
 	{
-		if (!Left4Fun.IsOnlineAdmin(player))
+		if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) < L4U_LEVEL.Admin)
 			return;
 		
 		local target = Left4Fun.GetArg(0, args);
@@ -1535,7 +1233,7 @@ Msg("Including left4fun_commands...\n");
 	// TODO: remove
 	::Left4Fun.CMD_activate_triggers <- function (player, args)
 	{
-		if (!Left4Fun.IsOnlineAdmin(player))
+		if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) < L4U_LEVEL.Admin)
 			return;
 		
 		local map = SessionState.MapName.tolower();
@@ -1630,7 +1328,7 @@ Msg("Including left4fun_commands...\n");
 			return;
 		}
 		
-		if (Left4Fun.IsOnlineAdmin(player))
+		if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) >= L4U_LEVEL.Admin)
 		{
 			local target = Left4Fun.GetArg(1, args);
 			if (target)
@@ -1684,7 +1382,7 @@ Msg("Including left4fun_commands...\n");
 		if (!Left4Fun.L4FCvars.survivor_abilities)
 			return;
 		
-		if (Left4Fun.IsOnlineAdmin(player))
+		if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) >= L4U_LEVEL.Admin)
 		{
 			local target = Left4Fun.GetArg(0, args);
 			if (target)
@@ -1739,7 +1437,7 @@ Msg("Including left4fun_commands...\n");
 		if (!Left4Fun.L4FCvars.survivor_abilities)
 			return;
 		
-		if (Left4Fun.IsOnlineAdmin(player))
+		if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) >= L4U_LEVEL.Admin)
 		{
 			local target = Left4Fun.GetArg(0, args);
 			if (target)
@@ -1778,7 +1476,7 @@ Msg("Including left4fun_commands...\n");
 		//if (!Left4Fun.L4FCvars.survivor_abilities)
 		//	return;
 		
-		if (Left4Fun.IsOnlineAdmin(player))
+		if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) >= L4U_LEVEL.Admin)
 		{
 			local target = Left4Fun.GetArg(0, args);
 			if (target)

@@ -94,7 +94,7 @@ Msg("Including left4fun_admin...\n");
 
 	::Left4Fun.CMD_kick <- function (player, args)
 	{
-		if (!Left4Fun.IsOnlineAdmin(player))
+		if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) < L4U_LEVEL.Admin)
 			return;
 		
 		local target = Left4Utils.GetPlayerFromName(Left4Fun.GetArg(0, args));
@@ -113,7 +113,7 @@ Msg("Including left4fun_admin...\n");
 			return;
 		}
 		
-		if (Left4Fun.IsOnlineAdmin(target))
+		if (Left4Users.GetOnlineUserLevel(target.GetPlayerUserId()) >= L4U_LEVEL.Admin)
 		{
 			Left4Fun.PrintToPlayerChat(player, "Can't kick online admins", PRINTCOLOR_ORANGE);
 			return;
@@ -154,7 +154,7 @@ Msg("Including left4fun_admin...\n");
 
 	::Left4Fun.CMD_ban <- function (player, args)
 	{
-		if (!Left4Fun.IsOnlineAdmin(player))
+		if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) < L4U_LEVEL.Admin)
 			return;
 		
 		local target = Left4Utils.GetPlayerFromName(Left4Fun.GetArg(0, args));
@@ -173,7 +173,7 @@ Msg("Including left4fun_admin...\n");
 			return;
 		}
 		
-		if (Left4Fun.IsOnlineAdmin(target))
+		if (Left4Users.GetOnlineUserLevel(target.GetPlayerUserId()) >= L4U_LEVEL.Admin)
 		{
 			Left4Fun.PrintToPlayerChat(player, "Can't ban online admins", PRINTCOLOR_ORANGE);
 			return;
@@ -217,7 +217,7 @@ Msg("Including left4fun_admin...\n");
 
 	::Left4Fun.CMD_incap <- function (player, args)
 	{
-		if (!Left4Fun.IsOnlineAdmin(player))
+		if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) < L4U_LEVEL.Admin)
 			return;
 		
 		local target = Left4Fun.GetArg(0, args);
@@ -245,7 +245,7 @@ Msg("Including left4fun_admin...\n");
 
 	::Left4Fun.CMD_kill <- function (player, args)
 	{
-		if (!Left4Fun.IsOnlineAdmin(player))
+		if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) < L4U_LEVEL.Admin)
 			return;
 		
 		local target = Left4Fun.GetArg(0, args);
@@ -273,7 +273,7 @@ Msg("Including left4fun_admin...\n");
 
 	::Left4Fun.CMD_respawn <- function (player, args)
 	{
-		if (!Left4Fun.IsOnlineAdmin(player))
+		if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) < L4U_LEVEL.Admin)
 			return;
 
 		local target = Left4Fun.GetArg(0, args);
@@ -313,7 +313,7 @@ Msg("Including left4fun_admin...\n");
 
 	::Left4Fun.CMD_give <- function (player, args)
 	{
-		if (!Left4Fun.IsOnlineAdmin(player))
+		if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) < L4U_LEVEL.Admin)
 			return;
 		
 		local target = Left4Fun.GetArg(0, args);
@@ -350,7 +350,7 @@ Msg("Including left4fun_admin...\n");
 
 	::Left4Fun.CMD_remove <- function (player, args)
 	{
-		if (!Left4Fun.IsOnlineAdmin(player))
+		if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) < L4U_LEVEL.Admin)
 			return;
 		
 		local target = Left4Fun.GetArg(0, args);
@@ -394,7 +394,7 @@ Msg("Including left4fun_admin...\n");
 
 	::Left4Fun.CMD_warp <- function (player, args)
 	{
-		if (!Left4Fun.IsOnlineAdmin(player))
+		if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) < L4U_LEVEL.Admin)
 			return;
 		
 		local target = Left4Fun.GetArg(0, args);
@@ -467,7 +467,7 @@ Msg("Including left4fun_admin...\n");
 
 	::Left4Fun.CMD_cvar <- function (player, args)
 	{
-		if (!Left4Fun.IsOnlineAdmin(player))
+		if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) < L4U_LEVEL.Admin)
 			return;
 		
 		local varName = Left4Fun.GetArg(0, args);
@@ -507,7 +507,7 @@ Msg("Including left4fun_admin...\n");
 
 	::Left4Fun.CMD_console <- function (player, args)
 	{
-		if (!Left4Fun.IsOnlineAdmin(player))
+		if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) < L4U_LEVEL.Admin)
 			return;
 		
 		local command = "";
@@ -525,7 +525,7 @@ Msg("Including left4fun_admin...\n");
 
 	::Left4Fun.CMD_director <- function (player, args)
 	{
-		if (!Left4Fun.IsOnlineAdmin(player))
+		if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) < L4U_LEVEL.Admin)
 			return;
 		
 		local param = Left4Fun.GetArg(0, args);
@@ -559,7 +559,7 @@ Msg("Including left4fun_admin...\n");
 
 	::Left4Fun.CMD_restart <- function (player, args)
 	{
-		if (!Left4Fun.IsOnlineAdmin(player))
+		if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) < L4U_LEVEL.Admin)
 			return;
 		
 		Left4Fun.Log(LOG_LEVEL_DEBUG, "CMD_restart from " + player.GetPlayerName());
@@ -570,7 +570,7 @@ Msg("Including left4fun_admin...\n");
 	// TODO: remove
 	::Left4Fun.CMD_prop <- function (player, args)
 	{
-		if (!Left4Fun.IsOnlineAdmin(player))
+		if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) < L4U_LEVEL.Admin)
 			return;
 		
 		local location = Left4Utils.GetLookingPosition(player);
@@ -634,7 +634,7 @@ Msg("Including left4fun_admin...\n");
 	// TODO: remove
 	::Left4Fun.CMD_ignite <- function (player, args)
 	{
-		if (!Left4Fun.IsOnlineAdmin(player))
+		if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) < L4U_LEVEL.Admin)
 			return;
 		
 		local target = Left4Fun.GetArg(0, args);
@@ -666,7 +666,7 @@ Msg("Including left4fun_admin...\n");
 	// TODO: remove
 	::Left4Fun.CMD_extinguish <- function (player, args)
 	{
-		if (!Left4Fun.IsOnlineAdmin(player))
+		if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) < L4U_LEVEL.Admin)
 			return;
 		
 		local target = Left4Fun.GetArg(0, args);
