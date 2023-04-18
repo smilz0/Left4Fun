@@ -181,6 +181,26 @@ Msg("Including left4fun_commands...\n");
 				Left4Fun.CMD_ability_stop(player, args);
 				break;
 			}
+			case "scripted_vocalizer":
+			{
+				Left4Fun.CMD_scripted_vocalizer(player, args);
+				break;
+			}
+			case "scripted_vocalizer_start":
+			{
+				Left4Fun.CMD_scripted_vocalizer_start(player, args);
+				break;
+			}
+			case "scripted_vocalizer_stop":
+			{
+				Left4Fun.CMD_scripted_vocalizer_stop(player, args);
+				break;
+			}
+			case "scripted_vocalizer_pause":
+			{
+				Left4Fun.CMD_scripted_vocalizer_pause(player, args);
+				break;
+			}
 			default:
 				//Left4Fun.Log(LOG_LEVEL_DEBUG, "OnUserCommand - Invalid cmd: " + cmd);
 				
@@ -1316,7 +1336,7 @@ Msg("Including left4fun_commands...\n");
 		Left4Fun.Ping(player);
 	}
 
-	Left4Fun.CMD_ability_set <- function (player, args)
+	::Left4Fun.CMD_ability_set <- function (player, args)
 	{
 		if (!Left4Fun.L4FCvars.survivor_abilities)
 			return;
@@ -1377,7 +1397,7 @@ Msg("Including left4fun_commands...\n");
 		Left4Fun.PrintToPlayerChat(player, "Done", PRINTCOLOR_GREEN);
 	}
 
-	Left4Fun.CMD_ability_start <- function (player, args)
+	::Left4Fun.CMD_ability_start <- function (player, args)
 	{
 		if (!Left4Fun.L4FCvars.survivor_abilities)
 			return;
@@ -1432,7 +1452,7 @@ Msg("Including left4fun_commands...\n");
 			Left4Fun.PrintToPlayerChat(player, "Ability is in cooldown. Seconds remaining: " + ceil(cooldown), PRINTCOLOR_ORANGE);
 	}
 
-	Left4Fun.CMD_ability_use <- function (player, args)
+	::Left4Fun.CMD_ability_use <- function (player, args)
 	{
 		if (!Left4Fun.L4FCvars.survivor_abilities)
 			return;
@@ -1471,7 +1491,7 @@ Msg("Including left4fun_commands...\n");
 		SurvivorAbilities.UseAbility(player);
 	}
 
-	Left4Fun.CMD_ability_stop <- function (player, args)
+	::Left4Fun.CMD_ability_stop <- function (player, args)
 	{
 		//if (!Left4Fun.L4FCvars.survivor_abilities)
 		//	return;
@@ -1509,5 +1529,65 @@ Msg("Including left4fun_commands...\n");
 		
 		if (SurvivorAbilities.RemoveAbility(player) && Left4Fun.L4FCvars.survivor_abilities_notifications)
 			Left4Fun.PrintToPlayerChat(player, "Ability stopped", PRINTCOLOR_ORANGE);
+	}
+	
+	::Left4Fun.CMD_scripted_vocalizer <- function (player, args)
+	{
+		if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) < L4U_LEVEL.Admin)
+			return;
+		
+		local file1 = Left4Fun.GetArg(0, args);
+		local file2 = Left4Fun.GetArg(1, args);
+		local file3 = Left4Fun.GetArg(2, args);
+		local file4 = Left4Fun.GetArg(3, args);
+		
+		Left4Fun.Log(LOG_LEVEL_DEBUG, "CMD_scripted_vocalizer from " + player.GetPlayerName() + " - file1: " + file1 + " - file2: " + file2 + " - file3: " + file3 + " - file4: " + file4);
+		
+		for (local i = 0; i < Left4Fun.ScriptedVocalizers.len(); i++)
+			Left4Fun.ScriptedVocalizers[i].Stop();
+		
+		Left4Fun.ScriptedVocalizers.clear();
+		
+		if (file1)
+			Left4Fun.ScriptedVocalizers.append(Left4Fun.ScriptedVocalizer(file1));
+		if (file2)
+			Left4Fun.ScriptedVocalizers.append(Left4Fun.ScriptedVocalizer(file2));
+		if (file3)
+			Left4Fun.ScriptedVocalizers.append(Left4Fun.ScriptedVocalizer(file3));
+		if (file4)
+			Left4Fun.ScriptedVocalizers.append(Left4Fun.ScriptedVocalizer(file4));
+	}
+	
+	::Left4Fun.CMD_scripted_vocalizer_start <- function (player, args)
+	{
+		if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) < L4U_LEVEL.Admin)
+			return;
+		
+		Left4Fun.Log(LOG_LEVEL_DEBUG, "CMD_scripted_vocalizer_start from " + player.GetPlayerName());
+		
+		for (local i = 0; i < Left4Fun.ScriptedVocalizers.len(); i++)
+			Left4Fun.ScriptedVocalizers[i].Start();
+	}
+	
+	::Left4Fun.CMD_scripted_vocalizer_stop <- function (player, args)
+	{
+		if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) < L4U_LEVEL.Admin)
+			return;
+		
+		Left4Fun.Log(LOG_LEVEL_DEBUG, "CMD_scripted_vocalizer_stop from " + player.GetPlayerName());
+		
+		for (local i = 0; i < Left4Fun.ScriptedVocalizers.len(); i++)
+			Left4Fun.ScriptedVocalizers[i].Stop();
+	}
+	
+	::Left4Fun.CMD_scripted_vocalizer_pause <- function (player, args)
+	{
+		if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) < L4U_LEVEL.Admin)
+			return;
+		
+		Left4Fun.Log(LOG_LEVEL_DEBUG, "CMD_scripted_vocalizer_pause from " + player.GetPlayerName());
+		
+		for (local i = 0; i < Left4Fun.ScriptedVocalizers.len(); i++)
+			Left4Fun.ScriptedVocalizers[i].Pause();
 	}
 //}

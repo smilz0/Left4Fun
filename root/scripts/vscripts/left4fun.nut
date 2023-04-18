@@ -217,6 +217,7 @@ const LOG_LEVEL_DEBUG = 4;
 		SoundsToPrecache = ["UI/gift_drop.wav", "UI/littlereward.wav", "EDIT_MARK.Enable", "EDIT_MARK.Disable"]
 		ReloadFixWeps = [ "weapon_smg", "weapon_smg_silenced", "weapon_smg_mp5", "weapon_rifle", "weapon_rifle_desert", "weapon_rifle_ak47", "weapon_rifle_sg552", "weapon_hunting_rifle", "weapon_sniper_military", "weapon_rifle_m60", "weapon_sniper_awp", "weapon_sniper_scout" ]
 		ReloadFixClips = {}
+		ScriptedVocalizers = []
 	}
 
 	// cmd buy items
@@ -432,6 +433,103 @@ const LOG_LEVEL_DEBUG = 4;
 		Left4Fun.Initialized = true;
 	}
 //}
+
+	class ::Left4Fun.ScriptedVocalizer
+	{
+		constructor(scriptFileName)
+		{
+			_scriptFileName = scriptFileName;
+			_script = [];
+			
+			local lines = Left4Utils.FileToStringList(_scriptFileName);
+			if (lines)
+			{
+				foreach (line in lines)
+				{
+					local tmp = split(Left4Utils.StripComments(line), ",");
+					if (tmp.len() == 4) // delay,actor,scene,duration
+					{
+						local entry = { delay = tmp[0].tofloat(), actor = tmp[1], scene = tmp[2], duration = tmp[3].tofloat() };
+						//Left4Utils.PrintTable(entry);
+						_script.append(entry);
+					}
+				}
+			}
+			
+			Left4Fun.Log(LOG_LEVEL_DEBUG, "new ScriptedVocalizer() - File: " + _scriptFileName + " - Lines: " + _script.len());
+		}
+		
+		function Start()
+		{
+			if (_started && !_paused)
+				return;
+			
+			Left4Timers.AddTimer(null, _script[_idx].delay, @(params) params.instance.PlayScene(), { instance = this });
+			
+			_started = true;
+			_paused = false;
+		}
+		
+		function Stop()
+		{
+			if (!_started)
+				return;
+			
+			_started = false;
+			_paused = false;
+			
+			_idx = 0;
+		}
+		
+		function Pause()
+		{
+			if (!_started)
+				return;
+			
+			_paused = true;
+		}
+		
+		function PlayScene()
+		{
+			if (_survivor || !_started || _paused || _idx >= _script.len())
+				return;
+			
+			local entry = _script[_idx];
+			
+			Left4Fun.Log(LOG_LEVEL_DEBUG, "ScriptedVocalizer.PlayScene - idx: " + _idx + " - Delay: " + entry.delay + " - Actor: " + entry.actor + " - Scene: " + entry.scene + " - Duration: " + entry.duration);
+			
+			_survivor = Left4Utils.GetSurvivorFromActor(entry.actor);
+			if (!_survivor)
+				return;
+			
+			Left4Utils.SpeakScene(_survivor, entry.scene, entry.actor);
+			
+			Left4Timers.AddTimer(null, _script[_idx].duration, @(params) params.instance.StopScene(), { instance = this });
+		}
+		
+		function StopScene()
+		{
+			if (_survivor)
+				DoEntFire("!self", "CancelCurrentScene", "", 0, null, _survivor);
+			_survivor = null;
+			
+			if (!_started || _paused)
+				return;
+			
+			if (++_idx < _script.len())
+				Left4Timers.AddTimer(null, _script[_idx].delay < 0.01 ? 0.01 : _script[_idx].delay, @(params) params.instance.PlayScene(), { instance = this });
+			else
+				Stop();
+		}
+		
+		_scriptFileName = null;
+		_started = false;
+		_paused = false;
+		_script = null;
+		_idx = 0;
+		_survivor = null;
+	}
+
 
 // Left4Fun sub scripts
 IncludeScript("survivor_abilities"); // this must go before left4fun_notifications
