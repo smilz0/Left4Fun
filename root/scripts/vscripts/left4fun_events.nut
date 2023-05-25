@@ -499,7 +499,16 @@ Msg("Including left4fun_events...\n");
 	if (!player || !player.IsValid())
 		return;
 	
-	Left4Timers.AddTimer(null, 0.1, ::Left4Fun.OnPostSpawn, { player = player }, false);
+	Left4Timers.AddTimer(null, 0.01, ::Left4Fun.OnPostSpawn, { player = player }, false);
+}
+
+::Left4Fun.OnPostSpawn <- function (params)
+{
+	local player = params["player"];
+	if (!player || !player.IsValid())
+		return;
+	
+	//Left4Fun.Log(LOG_LEVEL_DEBUG, "Left4Fun.OnPostSpawn - player: " + player.GetPlayerName());
 	
 	if (NetProps.GetPropInt(player, "m_iTeamNum") == TEAM_SURVIVORS)
 	{
@@ -554,15 +563,6 @@ Msg("Including left4fun_events...\n");
 			}
 		}
 	}
-}
-
-::Left4Fun.OnPostSpawn <- function (params)
-{
-	local player = params["player"];
-	if (!player || !player.IsValid())
-		return;
-	
-	//Left4Fun.Log(LOG_LEVEL_DEBUG, "Left4Fun.OnPostSpawn - player: " + player.GetPlayerName());
 	
 	if (NetProps.GetPropInt(player, "m_iTeamNum") == TEAM_SURVIVORS)
 	{
@@ -1383,6 +1383,14 @@ long	type	damage type
 {
 	local player = Left4Fun.GetParamPlayer("userid", params);
 	
+	Left4Timers.AddTimer(null, 0.01, @(params) Left4Fun.OnPlayerEnteredCheckpoint, { player = player }, false);
+}
+
+::Left4Fun.OnPlayerEnteredCheckpoint <- function (player)
+{
+	if (!player || !Player.IsValid())
+		return;
+	
 	if (!Left4Fun.ModeStarted || !player || !player.IsValid() || player.GetClassname() != "player" || NetProps.GetPropInt(player, "m_iTeamNum") != TEAM_SURVIVORS)
 		return;
 	
@@ -1390,7 +1398,7 @@ long	type	damage type
 	
 	local charName = Left4Utils.GetCharacterName(player);
 	if (charName && charName != "")
-		Left4Fun.PlayersInSafeSpot[charName] <- true;
+		Left4Fun.PlayersInSafeSpot[charName] <- true;	
 }
 
 ::Left4Fun.Events.OnGameEvent_player_left_checkpoint <- function (params)
