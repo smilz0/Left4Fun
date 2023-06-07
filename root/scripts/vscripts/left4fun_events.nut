@@ -535,16 +535,17 @@ Msg("Including left4fun_events...\n");
 	
 	if (Left4Fun.ModeStarted)
 	{
+		/*TODO: All this InfectedLimits next_infected stuff must be rewritten better
 		local t = NetProps.GetPropInt(player, "m_zombieClass");
 		if (t >= 1 && t <= 6)
 		{
 			if ((Left4Fun.InfectedLimits[t] - ::Left4Utils.GetAlivePlayersByType(t).len()) < 0)
 			{
-				//TODO: All this InfectedLimits next_infected stuff must be rewritten better
 				//Do not kill the player on player_spawn!!!  Left4Fun.DO_next_infected(player);
 				return;
 			}
 		}
+		*/
 	}
 	
 	if (NetProps.GetPropInt(player, "m_iTeamNum") == TEAM_INFECTED)
