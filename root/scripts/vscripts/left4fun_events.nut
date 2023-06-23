@@ -1434,57 +1434,6 @@ long	type	damage type
 
 // ---------------------------------------------
 
-::Left4Fun.InterceptChat <- function (msg, speaker)
-{
-	// Removing the ending \r\n
-	if (msg.find("\n", msg.len() - 1) != null || msg.find("\r", msg.len() - 1) != null)
-		msg = msg.slice(0, msg.len() - 1);
-	if (msg.find("\n", msg.len() - 1) != null || msg.find("\r", msg.len() - 1) != null)
-		msg = msg.slice(0, msg.len() - 1);
-	
-	if (!speaker)
-	{
-		Left4Fun.Log(LOG_LEVEL_WARN, "Got InterceptChat with null speaker: " + msg);
-		return true;
-	}
-	
-	Left4Fun.Log(LOG_LEVEL_DEBUG, "InterceptChat - speaker: " + speaker.GetPlayerName() + " - msg: " + msg);
-	
-	local name = speaker.GetPlayerName() + ": ";
-	local text = strip(msg.slice(msg.find(name) + name.len()));
-	local args = {};
-	if (text != null && text != "")
-		args = split(text, " ");
-	
-	local arguments = {};
-	local cmd = Left4Utils.FormatCommand(arguments, args, "!");
-		
-	if (cmd)
-		Left4Fun.HandleCommand(speaker, cmd, arguments);
-	
-	return true; // TODO: Hide?
-}
-
-HooksHub.SetInterceptChat("L4F", ::Left4Fun.InterceptChat);
-
-::Left4Fun.UserConsoleCommand <- function (player, arg)
-{
-	local args = {};
-	if (arg != null && arg != "")
-		args = split(arg, ",");
-	
-	if (player == null || !player.IsValid() || args.len() <= 0)
-		return;
-	
-	local arguments = {};
-	local cmd = Left4Utils.FormatCommand(arguments, args);
-		
-	if (cmd)
-		Left4Fun.HandleCommand(player, cmd, arguments);
-}
-
-HooksHub.SetUserConsoleCommand("L4F", ::Left4Fun.UserConsoleCommand);
-
 ::Left4Fun.AllowTakeDamage <- function (damageTable)
 {
 	//Left4Fun.Log(LOG_LEVEL_DEBUG, "Left4Fun.AllowTakeDamage");
