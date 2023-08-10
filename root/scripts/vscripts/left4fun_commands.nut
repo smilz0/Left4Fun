@@ -689,9 +689,9 @@ Msg("Including left4fun_commands...\n");
 	
 	Left4Fun.Log(LOG_LEVEL_DEBUG, "CMD_bspawn from " + player.GetPlayerName() + " - botCharacter: " + botCharacter + " - l4d1behavior: " + l4d1behavior + " - newChar: " + newChar);
 	
-	if (botCharacter == "zoey" && newChar == null)
-		Left4Fun.SpawnSurvivor(botCharacter, location, angles, TEAM_SURVIVORS, l4d1behavior, 9);
-	else
+	//if (botCharacter == "zoey" && newChar == null)
+	//	Left4Fun.SpawnSurvivor(botCharacter, location, angles, TEAM_SURVIVORS, l4d1behavior, 9);
+	//else
 		Left4Fun.SpawnSurvivor(botCharacter, location, angles, TEAM_SURVIVORS, l4d1behavior, newChar);
 }
 
