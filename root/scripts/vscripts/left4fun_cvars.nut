@@ -43,8 +43,8 @@ if (!("L4FCvarsBak" in getroottable()))
 	timed_notice = ""
 	timed_notice_interval = 0
 	remove_pistol_onincap = 0
-	gl_airborn_push_force = 0
-	m60_airborn_push_force = 0
+	gl_airborne_push_force = 0
+	m60_airborne_push_force = 0
 	render_mode = {}
 	render_fx = {}
 	render_color = {}
@@ -393,12 +393,12 @@ if (!("L4FCvarsBak" in getroottable()))
 			Left4Fun.L4FCvars.remove_pistol_onincap = String2Bool(value);
 			return true;
 			
-		case "l4f_gl_airborn_push_force":
-			Left4Fun.L4FCvars.gl_airborn_push_force = value.tofloat();
+		case "l4f_gl_airborne_push_force":
+			Left4Fun.L4FCvars.gl_airborne_push_force = value.tofloat();
 			return true;
 			
-		case "l4f_m60_airborn_push_force":
-			Left4Fun.L4FCvars.m60_airborn_push_force = value.tofloat();
+		case "l4f_m60_airborne_push_force":
+			Left4Fun.L4FCvars.m60_airborne_push_force = value.tofloat();
 			return true;
 			
 		case "l4f_disable_ledge_hang":
@@ -599,11 +599,11 @@ if (!("L4FCvarsBak" in getroottable()))
 		case "l4f_remove_pistol_onincap":
 			return Bool2String(Left4Fun.L4FCvars.remove_pistol_onincap);
 		
-		case "l4f_gl_airborn_push_force":
-			return Left4Fun.L4FCvars.gl_airborn_push_force;
+		case "l4f_gl_airborne_push_force":
+			return Left4Fun.L4FCvars.gl_airborne_push_force;
 			
-		case "l4f_m60_airborn_push_force":
-			return Left4Fun.L4FCvars.m60_airborn_push_force;
+		case "l4f_m60_airborne_push_force":
+			return Left4Fun.L4FCvars.m60_airborne_push_force;
 		
 		case "l4f_disable_ledge_hang":
 			return Bool2String(Left4Fun.L4FCvars.disable_ledge_hang);

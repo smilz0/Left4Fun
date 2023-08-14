@@ -891,13 +891,13 @@ float	victim_z
 	
 	if (weapon == "grenade_launcher")
 	{
-		if (Left4Fun.L4FCvars.gl_airborn_push_force != 0 && (NetProps.GetPropInt(player, "m_fFlags") & 1) == 0)
-			player.ApplyAbsVelocityImpulse(player.EyeAngles().Forward() * Left4Fun.L4FCvars.gl_airborn_push_force * -1);
+		if (Left4Fun.L4FCvars.gl_airborne_push_force != 0 && (NetProps.GetPropInt(player, "m_fFlags") & 1) == 0)
+			player.ApplyAbsVelocityImpulse(player.EyeAngles().Forward() * Left4Fun.L4FCvars.gl_airborne_push_force * -1);
 	}
 	else if (weapon == "rifle_m60")
 	{
-		if (Left4Fun.L4FCvars.m60_airborn_push_force != 0 && (NetProps.GetPropInt(player, "m_fFlags") & 1) == 0)
-			player.ApplyAbsVelocityImpulse(player.EyeAngles().Forward() * Left4Fun.L4FCvars.m60_airborn_push_force * -1);
+		if (Left4Fun.L4FCvars.m60_airborne_push_force != 0 && (NetProps.GetPropInt(player, "m_fFlags") & 1) == 0)
+			player.ApplyAbsVelocityImpulse(player.EyeAngles().Forward() * Left4Fun.L4FCvars.m60_airborne_push_force * -1);
 		
 		if (Left4Fun.Settings.m60_fix && aw && NetProps.GetPropInt(aw, "m_iClip1") <= 1) // m_iClip1 = 1 means that this is the last bullet of the clip
 		{
