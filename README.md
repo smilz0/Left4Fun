@@ -50,9 +50,9 @@ Left 4 Fun shares the same admins file with all my other addons, so a Left 4 Fun
 ## Addon settings
 The list of L4F settings can be found [HERE](https://gist.github.com/smilz0/6d5a52fd472026c573398227cf448278).
 
-You can change the settings by editing the file `ems/left4fun/cfg/host_settings.txt` or ingame with the following commands:
+You can change the settings by editing the file `ems/left4fun/cfg/host_settings.txt` or directly ingame with the following commands:
 - Via chat: `!l4f settings [setting] [value]`
-- Via console: `l4f,settings,[setting],[value]`
+- Via console: `scripted_user_func l4f,settings,[setting],[value]`
 
 
 ### Compatibility
