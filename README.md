@@ -47,7 +47,7 @@ But it's also 100% compatible with [Admin System](https://steamcommunity.com/sha
 Left 4 Fun shares the same admins file with all my other addons, so a Left 4 Fun admin is also admin on Left 4 Bots and Left 4 Grief.
 
 
-## Addon settings
+### Addon settings
 The list of L4F settings can be found [HERE](https://gist.github.com/smilz0/6d5a52fd472026c573398227cf448278).
 
 You can change the settings by editing the file `ems/left4fun/cfg/host_settings.txt` or directly ingame with the following commands:
