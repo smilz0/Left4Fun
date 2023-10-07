@@ -355,6 +355,58 @@ Msg("Including left4fun_functions...\n");
 	Left4Fun.Log(LOG_LEVEL_INFO, "ReplaceWithMoney saved");
 }
 
+::Left4Fun.LoadWarpPosFromFile <- function (fileName)
+{
+	Left4Fun.WarpPos.clear();
+	local lines = Left4Utils.FileToStringList(fileName);
+	if (!lines)
+		return Left4Fun.WarpPos.len();
+	
+	foreach (line in lines)
+	{
+		line = Left4Utils.StripComments(line);
+		if (line != "")
+		{
+			local values = split(line, "=");
+			if (values.len() != 2)
+				Left4Fun.Log(LOG_LEVEL_WARN, "Invalid WarpPos line: " + line);
+			else
+			{
+				local key = strip(values[0]);
+				local value = strip(values[1]);
+				if (!key)
+					Left4Fun.Log(LOG_LEVEL_WARN, "Invalid WarpPos line: " + line);
+				else
+				{
+					values = split(value, ",");
+					if (values.len() != 3)
+						Left4Fun.Log(LOG_LEVEL_WARN, "Invalid WarpPos line: " + line);
+					else
+					{
+						value = Vector(values[0].tofloat(), values[1].tofloat(), values[2].tofloat());
+						
+						Left4Fun.Log(LOG_LEVEL_DEBUG, "WarpPos[" + key + "] = " + value);
+					
+						Left4Fun.WarpPos[key] <- value;
+					}
+				}
+			}			
+		}
+	}
+	return Left4Fun.WarpPos.len();
+}
+
+::Left4Fun.SaveWarpPosToFile <- function (fileName)
+{
+	local lines = [];
+	foreach(key, value in Left4Fun.WarpPos)
+		lines.append(key + " = " + value.x + "," + value.y + "," + value.z);
+
+	Left4Utils.StringListToFile(fileName, lines, true);
+	
+	Left4Fun.Log(LOG_LEVEL_INFO, "WarpPos saved");
+}
+
 ::Left4Fun.GetPlayer <- function (ent)
 {
 	if (!ent || !ent.IsValid() || !ent.IsPlayer())
@@ -557,15 +609,6 @@ Msg("Including left4fun_functions...\n");
 				
 			break;
 		}
-		case "admin_commands":
-		{
-			if (settingValue == "")
-				currentValue = Bool2String(Left4Fun.Settings.admin_commands);
-			else
-				Left4Fun.Settings.admin_commands = Left4Fun.String2Bool(settingValue);
-				
-			break;
-		}
 		case "pickup_objects":
 		{
 			if (settingValue == "")
@@ -647,7 +690,6 @@ Msg("Including left4fun_functions...\n");
 			Left4Fun.PrintToPlayerChat(player, "[Settings] bot_friendlyfire_damagefactor = " + Left4Fun.Settings.bot_friendlyfire_damagefactor, PRINTCOLOR_NORMAL);
 			Left4Fun.PrintToPlayerChat(player, "[Settings] always_win = " + ST_User2String(Left4Fun.Settings.always_win), PRINTCOLOR_NORMAL);
 			Left4Fun.PrintToPlayerChat(player, "[Settings] admin_hints_level = " + ST_Notice2String(Left4Fun.Settings.admin_hints_level), PRINTCOLOR_NORMAL);
-			Left4Fun.PrintToPlayerChat(player, "[Settings] admin_commands = " + Bool2String(Left4Fun.Settings.admin_commands), PRINTCOLOR_NORMAL);
 			Left4Fun.PrintToPlayerChat(player, "[Settings] pickup_objects = " + Bool2String(Left4Fun.Settings.pickup_objects), PRINTCOLOR_NORMAL);
 			Left4Fun.PrintToPlayerChat(player, "[Settings] reload_fix = " + Bool2String(Left4Fun.Settings.reload_fix), PRINTCOLOR_NORMAL);
 			Left4Fun.PrintToPlayerChat(player, "[Settings] m60_fix = " + Bool2String(Left4Fun.Settings.m60_fix), PRINTCOLOR_NORMAL);

@@ -1,8 +1,5 @@
 ::Left4Fun.Settings <-
 {
-	// [1: true/0: false] Enable/Disable certain admin conmmands that can conflict with the same admin commands from Admin System. Disable this if you use Admin System
-	admin_commands = 1
-	
 	// Level of server hints that will be sent to all the admins online
 	// Possible values:
 	//	0: all (all the hints will be shown)
