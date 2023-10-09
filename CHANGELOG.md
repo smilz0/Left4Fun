@@ -1,5 +1,22 @@
 # Changelog
 
+## [Unreleased](https://github.com/smilz0/Left4Fun/tree/HEAD)
+
+[Full Changelog](https://github.com/smilz0/Left4Fun/compare/v1.1...HEAD)
+
+**Implemented enhancements:**
+
+- Overhauled requirement check script [\#4](https://github.com/smilz0/Left4Fun/issues/4)
+
+## [v1.1](https://github.com/smilz0/Left4Fun/tree/v1.1) (2023-10-07)
+
+[Full Changelog](https://github.com/smilz0/Left4Fun/compare/v1.0...v1.1)
+
+**Implemented enhancements:**
+
+- New command: 'warpsave' [\#3](https://github.com/smilz0/Left4Fun/issues/3)
+- Merge 'left4fun\_commands' and 'left4fun\_admin' and remove 'admin\_commands' setting [\#2](https://github.com/smilz0/Left4Fun/issues/2)
+
 ## [v1.0](https://github.com/smilz0/Left4Fun/tree/v1.0) (2023-08-25)
 
 [Full Changelog](https://github.com/smilz0/Left4Fun/compare/a4cda6cf3707fc4e9a8df6be047c167ecc5711bb...v1.0)
