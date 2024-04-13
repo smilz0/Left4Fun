@@ -15,12 +15,39 @@ Msg("Including left4fun_events...\n");
 			DirectorScript.GetDirectorOptions().OnModeStart();
 	}
 	
+	local who = null;
+	if ("userid" in query)
+		who = g_MapScript.GetPlayerFromUserID(query.userid.tointeger());
+	else if ("who" in query)
+		who = Left4Utils.GetSurvivorFromActor(query.who);
+	else if ("Who" in query)
+		who = Left4Utils.GetSurvivorFromActor(query.Who);
+
+/*
+	local subjectid = null;
+	if ("subjectid" in query)
+		subjectid = query.subjectid.tointeger();
+	
+	local subject = null;
+	if ("subject" in query)
+		subject = query.subject;
+	else if ("Subject" in query)
+		subject = query.Subject;
+
+	if (subjectid != null)
+		subject = g_MapScript.GetPlayerFromUserID(subjectid);
+	else if (subject)
+		subject = GetSurvivorFromActor(subject);
+*/
+
+	if (!who || !who.IsValid())
+		return;
+
 	if (concept == "PlayerPickup")
 	{
-		Left4Fun.Log(LOG_LEVEL_DEBUG, "PlayerPickup - who: " + query.who);
-		
-		local who = Left4Utils.GetSurvivorFromActor(query.who);
-		if (who && who.IsValid() && ("IsSurvivor" in who) && who.IsSurvivor())
+		Left4Fun.Log(LOG_LEVEL_DEBUG, "PlayerPickup - who: " + who.GetPlayerName());
+
+		if (("IsSurvivor" in who) && who.IsSurvivor())
 		{
 			local weapon = Left4Utils.GetInventoryItemInSlot(who, INV_SLOT_PRIMARY);
 			if (weapon && weapon.IsValid() && Left4Fun.ReloadFixWeps.find(weapon.GetClassname()) != null)
@@ -33,12 +60,8 @@ Msg("Including left4fun_events...\n");
 	}
 	
 	// TODO: TEST
-	if (concept != "SceneCancelled" && ("who" in query))
-	{
-		local who = Left4Utils.GetSurvivorFromActor(query.who);
-		if (who && who.IsValid() && Left4Users.GetOnlineUserLevel(who.GetPlayerUserId()) < L4U_LEVEL.User)
-			DoEntFire("!self", "CancelCurrentScene", "", 0.01, null, who);
-	}
+	if (concept != "SceneCancelled" && Left4Users.GetOnlineUserLevel(who.GetPlayerUserId()) < L4U_LEVEL.User)
+		DoEntFire("!self", "CancelCurrentScene", "", 0.01, null, who);
 }
 
 ::Left4Fun.Events.OnGameEvent_server_cvar <- function (params)
