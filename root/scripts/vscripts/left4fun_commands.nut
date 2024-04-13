@@ -104,6 +104,11 @@ Msg("Including left4fun_commands...\n");
 			Left4Fun.CMD_bspawn(player, args);
 			break;
 		}
+		case "wspawn":
+		{
+			Left4Fun.CMD_wspawn(player, args);
+			break;
+		}
 		case "zspawn":
 		{
 			Left4Fun.CMD_zspawn(player, args);
@@ -1434,6 +1439,33 @@ Msg("Including left4fun_commands...\n");
 	//	Left4Fun.SpawnSurvivor(botCharacter, location, angles, TEAM_SURVIVORS, l4d1behavior, 9);
 	//else
 		Left4Fun.SpawnSurvivor(botCharacter, location, angles, TEAM_SURVIVORS, l4d1behavior, newChar);
+}
+
+::Left4Fun.CMD_wspawn <- function (player, args)
+{
+	if (Left4Users.GetOnlineUserLevel(player.GetPlayerUserId()) < L4U_LEVEL.Admin)
+		return;
+	
+	local weapon = Left4Fun.GetArg(0, args);
+	if (!weapon)
+	{
+		Left4Fun.PrintToPlayerChat(player, "Invalid parameters", PRINTCOLOR_ORANGE);
+		return;
+	}
+	
+	local amount = Left4Fun.GetArg(1, args);
+	if (!amount)
+		amount = 1;
+	else
+		amount = amount.tointeger();
+	local location = Left4Utils.GetLookingPosition(player);
+	
+	Left4Fun.Log(LOG_LEVEL_DEBUG, "CMD_wspawn from " + player.GetPlayerName() + " - weapon: " + weapon + " - amount: " + amount);
+	
+	//for (local i = 0; i < amount; i++)
+	//{
+		Left4Utils.SpawnWeapon(weapon, location, QAngle(0, 0, 90), amount);
+	//}
 }
 
 ::Left4Fun.CMD_zspawn <- function (player, args)

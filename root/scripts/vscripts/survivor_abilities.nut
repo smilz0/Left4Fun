@@ -670,7 +670,7 @@ class ::SurvivorAbilities.BaseAbility
 	else
 	{
 		// this shouldn't happen btw
-		Left4Fun.Log(LOG_LEVEL_ERROR, "SurvivorAbilities.SurvivorReplace - survivorOut had no cooldown!");
+		Left4Fun.Log(LOG_LEVEL_WARN, "SurvivorAbilities.SurvivorReplace - survivorOut had no cooldown!");
 		
 		SurvivorAbilities.ResetCooldown(survivorIn);
 	}
