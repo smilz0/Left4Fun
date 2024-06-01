@@ -37,7 +37,7 @@ Msg("Including left4fun_events...\n");
 	if (subjectid != null)
 		subject = g_MapScript.GetPlayerFromUserID(subjectid);
 	else if (subject)
-		subject = GetSurvivorFromActor(subject);
+		subject = Left4Utils.GetSurvivorFromActor(subject);
 */
 
 	if (!who || !who.IsValid())
