@@ -171,7 +171,7 @@ Msg("Including left4fun_commands...\n");
 		}
 		case "pcvar":
 		{
-			Left4Fun.CMD_pcvar(player, args);
+			Left4Fun.CMD_pcvar(player, args, text);
 			break;
 		}
 		case "pcvars":
