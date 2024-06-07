@@ -300,8 +300,8 @@ IncludeScript("left4fun_settings");
 		return;
 	}
 	
-	Left4Fun.ModeName = SessionState.ModeName;
-	Left4Fun.MapName = SessionState.MapName;
+	Left4Fun.ModeName = Director.GetGameMode();
+	Left4Fun.MapName = Director.GetMapName();
 	Left4Fun.Difficulty = Convars.GetStr("z_difficulty").tolower();
 
 	Left4Fun.Log(LOG_LEVEL_DEBUG, "Initializing for game mode: " + Left4Fun.ModeName + " - map name: " + Left4Fun.MapName + " - difficulty: " + Left4Fun.Difficulty);

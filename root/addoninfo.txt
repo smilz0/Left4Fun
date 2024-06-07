@@ -2,7 +2,7 @@
 {
   addonSteamAppID   	550
   addontitle			"Left 4 Fun"
-  addonversion	    	"1.2.1"
+  addonversion	    	"1.2.2"
   addonauthor 	   		"smilzo"
   addonDescription  	"Easy to use modding system to mod the existing game modes and bring some extra fun to the game. Also contains some admin commands."
   addonContent_Script 	1
