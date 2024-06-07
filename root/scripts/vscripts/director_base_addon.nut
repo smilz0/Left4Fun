@@ -1,3 +1,5 @@
+IncludeScript("left4fun");
+
 if (!("AllowWeaponSpawn" in DirectorScript.GetDirectorOptions()))
 {
 	DirectorScript.GetDirectorOptions().AllowWeaponSpawn <- function (classname)
