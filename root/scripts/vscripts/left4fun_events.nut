@@ -924,7 +924,10 @@ float	victim_z
 		
 		if (Left4Fun.Settings.m60_fix && aw && NetProps.GetPropInt(aw, "m_iClip1") <= 1) // m_iClip1 = 1 means that this is the last bullet of the clip
 		{
-			NetProps.SetPropFloat(aw, "m_flNextPrimaryAttack", Time() + 0.3);  // Stop firing for a while
+			// https://github.com/smilz0/Left4Fun/issues/5
+			//NetProps.SetPropFloat(aw, "m_flNextPrimaryAttack", Time() + 0.3);  // Stop firing for a while
+			NetProps.SetPropFloat(player, "m_flNextAttack", Time() + 0.3);
+			
 			NetProps.SetPropInt(aw, "m_iClip1", 2); // This, after the event, becomes 1 and it's meant to prevent the weapon drop
 			
 			Left4Timers.AddTimer(null, 0.1, Left4Fun.ResetM60Clip, { weapon = aw }, false); // I can't set m_iClip1 to 0 here because the code that drops the weapon runs right after this event, so i reset it a bit later
